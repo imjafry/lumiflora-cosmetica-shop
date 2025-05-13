@@ -1,38 +1,49 @@
-import React, { useState } from "react";
+
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   User, Package, ShoppingBag, Heart, 
-  LogOut, ChevronRight, Plus, Minus
+  LogOut, ChevronRight, Settings, UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import ProfileForm from "@/components/profile/ProfileForm";
+import OrderHistoryList from "@/components/orders/OrderHistoryList";
+import AuthDialog from "@/components/auth/AuthDialog";
 
 const Account = () => {
-  // Mock user data - replace with actual user data from authentication
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    memberSince: "January 2023",
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [authDialogOpen, setAuthDialogOpen] = useState(!user);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
-  // Mock order history data - replace with actual order data from backend
-  const orderHistory = [
-    {
-      id: "12345",
-      date: "2024-07-15",
-      items: 3,
-      total: 74.97,
-      status: "Shipped",
-    },
-    {
-      id: "67890",
-      date: "2024-07-01",
-      items: 5,
-      total: 125.00,
-      status: "Delivered",
-    },
-  ];
+  if (!user) {
+    return (
+      <motion.div
+        className="container mx-auto px-4 py-8 md:py-16"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Account</h1>
+          <p className="mb-6">Please sign in or create an account to continue</p>
+          <Button onClick={() => setAuthDialogOpen(true)}>Sign In / Register</Button>
+          <AuthDialog 
+            open={authDialogOpen}
+            onOpenChange={setAuthDialogOpen}
+          />
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -46,86 +57,68 @@ const Account = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Account Sidebar */}
         <div className="md:col-span-1">
-          <div className="bg-card rounded-xl border p-6">
+          <Card className="border p-6">
             <div className="flex items-center space-x-4 mb-6">
-              <User className="h-10 w-10" />
+              <UserCircle className="h-10 w-10" />
               <div>
-                <h2 className="text-lg font-medium">{user.name}</h2>
+                <h2 className="text-lg font-medium">{profile?.full_name || user.email}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Member since {user.memberSince}
+                  Member since {new Date(user.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
 
-            <nav className="grid gap-4">
-              <Button variant="ghost" className="justify-start rounded-full">
+            <nav className="grid gap-2">
+              <Button variant="ghost" className="justify-start">
                 <Package className="mr-2 h-4 w-4" />
                 My Orders
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
-              <Button variant="ghost" className="justify-start rounded-full">
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                My Wishlist
+              <Button variant="ghost" className="justify-start">
+                <Heart className="mr-2 h-4 w-4" />
+                Wishlist
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
-              <Button variant="ghost" className="justify-start rounded-full">
-                <Heart className="mr-2 h-4 w-4" />
-                Saved Addresses
+              <Button variant="ghost" className="justify-start">
+                <Settings className="mr-2 h-4 w-4" />
+                Account Settings
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
             </nav>
 
             <div className="border-t mt-6 pt-6">
-              <Button variant="ghost" className="justify-start rounded-full w-full">
+              <Button 
+                variant="ghost" 
+                className="justify-start w-full text-destructive hover:text-destructive"
+                onClick={handleSignOut}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Account Content */}
         <div className="md:col-span-2">
-          <div className="bg-card rounded-xl border p-6">
-            <h2 className="text-lg font-medium mb-6">Order History</h2>
+          <Card className="border">
+            <Tabs defaultValue="orders" className="w-full">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="orders">Order History</TabsTrigger>
+                <TabsTrigger value="profile">My Profile</TabsTrigger>
+              </TabsList>
 
-            {orderHistory.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-muted-foreground">
-                  <thead className="text-xs uppercase bg-muted/50">
-                    <tr>
-                      <th className="py-3 px-4">Order ID</th>
-                      <th className="py-3 px-4">Date</th>
-                      <th className="py-3 px-4">Items</th>
-                      <th className="py-3 px-4">Total</th>
-                      <th className="py-3 px-4">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orderHistory.map((order) => (
-                      <tr key={order.id} className="border-b">
-                        <td className="py-3 px-4">{order.id}</td>
-                        <td className="py-3 px-4">{order.date}</td>
-                        <td className="py-3 px-4">{order.items}</td>
-                        <td className="py-3 px-4">৳{order.total}</td>
-                        <td className="py-3 px-4">{order.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <ShoppingBag className="mx-auto h-6 w-6 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  You haven't placed any orders yet.
-                </p>
-                <Button asChild className="mt-4 rounded-full">
-                  <Link to="/">Start Shopping</Link>
-                </Button>
-              </div>
-            )}
-          </div>
+              <TabsContent value="orders" className="p-6">
+                <h2 className="text-lg font-medium mb-4">Order History</h2>
+                <OrderHistoryList />
+              </TabsContent>
+
+              <TabsContent value="profile" className="p-6">
+                <h2 className="text-lg font-medium mb-4">Update Profile</h2>
+                <ProfileForm />
+              </TabsContent>
+            </Tabs>
+          </Card>
         </div>
       </div>
     </motion.div>
