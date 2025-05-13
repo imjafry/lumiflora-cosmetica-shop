@@ -7,6 +7,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MainLayout from "./components/layout/MainLayout";
+import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Account from "./pages/Account";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import { useState, useEffect } from "react";
 
 // Create a client
@@ -46,11 +52,12 @@ const App = () => {
             <Route element={<MainLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="/category/:categoryId" element={<Index />} />
-              <Route path="/products/:productId" element={<Index />} />
-              <Route path="/cart" element={<Index />} />
-              <Route path="/account" element={<Index />} />
-              <Route path="/about" element={<Index />} />
-              <Route path="/contact" element={<Index />} />
+              <Route path="/products/:productId" element={<ProductDetails />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
