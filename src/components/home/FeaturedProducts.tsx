@@ -33,7 +33,15 @@ export default function FeaturedProducts() {
           throw error;
         }
         
-        setProducts(data || []);
+        // Add sale flag to some products for demo purposes
+        const enhancedData = data?.map(product => ({
+          ...product,
+          is_sale: Math.random() > 0.5,
+          discount_percent: Math.floor(Math.random() * 40) + 10, // 10-50% discount
+          original_price: product.is_sale ? Math.round(product.price * (1 + (Math.random() * 0.5))) : null
+        })) || [];
+        
+        setProducts(enhancedData);
       } catch (error) {
         console.error('Error fetching products:', error);
         toast({
@@ -41,8 +49,15 @@ export default function FeaturedProducts() {
           description: "Please try again later.",
           variant: "destructive",
         });
+        
         // Use mock data as fallback
-        setProducts(mockProducts);
+        const mockData = mockProducts.map(product => ({
+          ...product,
+          is_sale: Math.random() > 0.5,
+          discount_percent: Math.floor(Math.random() * 40) + 10,
+          original_price: Math.round(product.price * 1.3)
+        }));
+        setProducts(mockData);
       } finally {
         setLoading(false);
       }
@@ -62,8 +77,8 @@ export default function FeaturedProducts() {
           transition={{ duration: 0.5 }}
         >
           <div>
-            <h2 className="text-3xl font-bold">Our Collections</h2>
-            <p className="text-muted-foreground mt-2">Discover our handpicked products just for you</p>
+            <h2 className="text-3xl font-bold">Shop Our Collections</h2>
+            <p className="text-muted-foreground mt-2">Handpicked beauty products for every need</p>
           </div>
           
           <motion.div
@@ -174,7 +189,7 @@ function renderProductGrid(products: any[], loading: boolean) {
 const mockProducts = [
   {
     id: "1",
-    name: "Hydrating Serum",
+    name: "Hydrating Serum with Hyaluronic Acid",
     brand: "SkinJoy",
     price: 2490,
     rating: 4.8,
@@ -187,7 +202,7 @@ const mockProducts = [
   },
   {
     id: "2",
-    name: "Matte Lipstick",
+    name: "Long-lasting Matte Lipstick",
     brand: "GlamourCo",
     price: 1790,
     rating: 4.6,
@@ -200,7 +215,7 @@ const mockProducts = [
   },
   {
     id: "3",
-    name: "Rose Perfume",
+    name: "Luxury Rose Eau de Parfum",
     brand: "LuxScent",
     price: 5990,
     rating: 4.9,
@@ -213,7 +228,7 @@ const mockProducts = [
   },
   {
     id: "4",
-    name: "Cleansing Foam",
+    name: "Gentle Cleansing Foam",
     brand: "SkinJoy",
     price: 1290,
     rating: 4.7,
@@ -222,6 +237,58 @@ const mockProducts = [
     category: "skincare",
     is_new: false,
     is_bestseller: false,
+    is_featured: true,
+  },
+  {
+    id: "5",
+    name: "Vitamin C Brightening Cream",
+    brand: "GlowSkin",
+    price: 3290,
+    rating: 4.5,
+    reviewCount: 89,
+    images: ["https://images.unsplash.com/photo-1556228578-8c89e6adf883"],
+    category: "skincare",
+    is_new: true,
+    is_bestseller: true,
+    is_featured: true,
+  },
+  {
+    id: "6",
+    name: "24-Hour Waterproof Eyeliner",
+    brand: "MakeupPro",
+    price: 950,
+    rating: 4.3,
+    reviewCount: 112,
+    images: ["https://images.unsplash.com/photo-1512496015851-a90fb38ba796"],
+    category: "makeup",
+    is_new: false,
+    is_bestseller: true,
+    is_featured: true,
+  },
+  {
+    id: "7",
+    name: "Keratin Hair Treatment Oil",
+    brand: "HairLuxe",
+    price: 1890,
+    rating: 4.6,
+    reviewCount: 76,
+    images: ["https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388"],
+    category: "haircare",
+    is_new: true,
+    is_bestseller: false,
+    is_featured: true,
+  },
+  {
+    id: "8",
+    name: "Collagen Peptide Face Mask",
+    brand: "SkinJoy",
+    price: 590,
+    rating: 4.8,
+    reviewCount: 203,
+    images: ["https://images.unsplash.com/photo-1570194065650-d99fb4bedf15"],
+    category: "skincare",
+    is_new: false,
+    is_bestseller: true,
     is_featured: true,
   }
 ];

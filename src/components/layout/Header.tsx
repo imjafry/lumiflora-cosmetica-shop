@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../theme/ThemeToggle";
-import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Search, Heart, Bell } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Badge } from "../ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Logo component
 const Logo = () => (
@@ -27,8 +29,7 @@ const navItems = [
   { name: "Makeup", href: "/category/makeup" },
   { name: "Perfumes", href: "/category/perfumes" },
   { name: "New Arrivals", href: "/new-arrivals" },
-  { name: "About Us", href: "/about" },
-  { name: "Contact", href: "/contact" },
+  { name: "Sale", href: "/category/sale" },
 ];
 
 export default function Header() {
@@ -36,6 +37,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   // Handle scroll event for header styling
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function Header() {
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-300 ease-in-out",
         isScrolled
-          ? "bg-background/80 backdrop-blur-lg shadow-sm"
+          ? "bg-background/90 backdrop-blur-lg shadow-sm"
           : "bg-transparent"
       )}
     >
@@ -87,6 +89,20 @@ export default function Header() {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* Wishlist button */}
+            <Button variant="ghost" size="icon" className="rounded-full relative hidden sm:flex" asChild>
+              <Link to="/account?tab=wishlist">
+                <Heart className="h-5 w-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">0</Badge>
+              </Link>
+            </Button>
+
+            {/* Notifications */}
+            <Button variant="ghost" size="icon" className="rounded-full relative hidden sm:flex">
+              <Bell className="h-5 w-5" />
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">3</Badge>
+            </Button>
+
             {/* Theme toggle */}
             <ThemeToggle />
 
@@ -94,16 +110,25 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="rounded-full relative" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-xs flex items-center justify-center text-white">
-                  0
-                </span>
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">2</Badge>
               </Link>
             </Button>
 
             {/* User account button */}
-            <Button variant="ghost" size="icon" className="rounded-full" asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full" 
+              asChild
+            >
               <Link to="/account">
-                <User className="h-5 w-5" />
+                {user ? (
+                  <div className="h-7 w-7 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white font-medium text-xs">
+                    {user.email?.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
               </Link>
             </Button>
 

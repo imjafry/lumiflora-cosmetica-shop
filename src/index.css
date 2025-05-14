@@ -104,4 +104,49 @@
   .animation-delay-4000 {
     animation-delay: 4s;
   }
+  
+  /* E-commerce specific utilities */
+  .product-grid {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6;
+  }
+  
+  .category-card {
+    @apply rounded-xl overflow-hidden bg-card border hover:shadow-md transition-shadow;
+  }
+  
+  .product-card {
+    @apply rounded-xl overflow-hidden border bg-card hover:shadow-md transition-shadow h-full flex flex-col;
+  }
+  
+  .product-image {
+    @apply relative aspect-[4/5] overflow-hidden bg-muted/30;
+  }
+  
+  .product-info {
+    @apply p-4 flex-grow flex flex-col;
+  }
+  
+  .badge-sale {
+    @apply bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  
+  .badge-new {
+    @apply bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  
+  .badge-bestseller {
+    @apply bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  
+  .product-price {
+    @apply font-semibold;
+  }
+  
+  .product-price-original {
+    @apply text-sm text-muted-foreground line-through;
+  }
+  
+  .btn-add-to-cart {
+    @apply text-xs rounded-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600;
+  }
 }
