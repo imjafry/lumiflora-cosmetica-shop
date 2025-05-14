@@ -18,10 +18,15 @@ const Account = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [authDialogOpen, setAuthDialogOpen] = useState(!user);
+  const [activeTab, setActiveTab] = useState("orders");
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
   };
 
   if (!user) {
@@ -69,17 +74,38 @@ const Account = () => {
             </div>
 
             <nav className="grid gap-2">
-              <Button variant="ghost" className="justify-start">
+              <Button 
+                variant={activeTab === "orders" ? "default" : "ghost"} 
+                className="justify-start"
+                onClick={() => handleTabClick("orders")}
+              >
                 <Package className="mr-2 h-4 w-4" />
                 My Orders
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
-              <Button variant="ghost" className="justify-start">
+              <Button 
+                variant={activeTab === "profile" ? "default" : "ghost"} 
+                className="justify-start"
+                onClick={() => handleTabClick("profile")}
+              >
+                <User className="mr-2 h-4 w-4" />
+                My Profile
+                <ChevronRight className="ml-auto h-4 w-4" />
+              </Button>
+              <Button 
+                variant={activeTab === "wishlist" ? "default" : "ghost"} 
+                className="justify-start"
+                onClick={() => handleTabClick("wishlist")}
+              >
                 <Heart className="mr-2 h-4 w-4" />
                 Wishlist
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
-              <Button variant="ghost" className="justify-start">
+              <Button 
+                variant={activeTab === "settings" ? "default" : "ghost"} 
+                className="justify-start"
+                onClick={() => handleTabClick("settings")}
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 Account Settings
                 <ChevronRight className="ml-auto h-4 w-4" />
@@ -102,10 +128,12 @@ const Account = () => {
         {/* Account Content */}
         <div className="md:col-span-2">
           <Card className="border">
-            <Tabs defaultValue="orders" className="w-full">
-              <TabsList className="w-full grid grid-cols-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="orders">Order History</TabsTrigger>
                 <TabsTrigger value="profile">My Profile</TabsTrigger>
+                <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
               <TabsContent value="orders" className="p-6">
@@ -116,6 +144,31 @@ const Account = () => {
               <TabsContent value="profile" className="p-6">
                 <h2 className="text-lg font-medium mb-4">Update Profile</h2>
                 <ProfileForm />
+              </TabsContent>
+
+              <TabsContent value="wishlist" className="p-6">
+                <h2 className="text-lg font-medium mb-4">My Wishlist</h2>
+                <p className="text-muted-foreground">Your wishlist is currently empty.</p>
+              </TabsContent>
+
+              <TabsContent value="settings" className="p-6">
+                <h2 className="text-lg font-medium mb-4">Account Settings</h2>
+                <div className="space-y-4">
+                  <div className="grid gap-2">
+                    <h3 className="text-md font-medium">Email Preferences</h3>
+                    <p className="text-sm text-muted-foreground">Manage your email notification settings</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <h3 className="text-md font-medium">Password</h3>
+                    <p className="text-sm text-muted-foreground">Change your password</p>
+                    <Button variant="outline" className="w-full sm:w-auto">Change Password</Button>
+                  </div>
+                  <div className="grid gap-2">
+                    <h3 className="text-md font-medium">Delete Account</h3>
+                    <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+                    <Button variant="destructive" className="w-full sm:w-auto">Delete Account</Button>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </Card>

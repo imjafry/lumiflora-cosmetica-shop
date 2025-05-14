@@ -4,9 +4,21 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
+// Define profile type
+interface Profile {
+  id: string;
+  full_name?: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  district?: string;
+  postal_code?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: Profile | null;  // Add this line
   isAdmin: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
@@ -20,8 +32,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null); // Add this line
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Function to fetch user profile
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      if (data) {
+        setProfile(data as Profile);
+      }
+    } catch (error) {
+      console.error('Error in fetchProfile:', error);
+    }
+  };
 
   useEffect(() => {
     async function getInitialSession() {
@@ -32,8 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
 
-        // Check if user is admin
+        // Fetch profile if user exists
         if (initialSession?.user) {
+          await fetchProfile(initialSession.user.id);
+          
+          // Check if user is admin
           const { data, error } = await supabase.rpc('is_admin', { 
             uid: initialSession.user.id 
           });
@@ -50,8 +88,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(newSession);
           setUser(newSession?.user ?? null);
 
-          // Check admin status when auth state changes
+          // Handle profile fetch on auth state change
           if (newSession?.user) {
+            await fetchProfile(newSession.user.id);
+            
+            // Check admin status when auth state changes
             const { data, error } = await supabase.rpc('is_admin', { 
               uid: newSession.user.id 
             });
@@ -62,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setIsAdmin(data || false);
             }
           } else {
+            setProfile(null);
             setIsAdmin(false);
           }
         });
@@ -137,6 +179,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
+      // Update local profile state after successful update
+      if (profile) {
+        setProfile({
+          ...profile,
+          ...data
+        });
+      }
+      
       toast({ title: "Profile updated successfully!" });
     } catch (error: any) {
       toast({ 
@@ -144,12 +194,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message || "An unexpected error occurred", 
         variant: "destructive" 
       });
+      throw error;
     }
   }
 
   const value = {
     user,
     session,
+    profile, // Add this line
     isAdmin,
     isLoading,
     signIn,

@@ -41,6 +41,19 @@ const ProfileForm = () => {
     },
   });
 
+  // Update form values when profile changes
+  React.useEffect(() => {
+    if (profile) {
+      form.reset({
+        full_name: profile.full_name || "",
+        phone: profile.phone || "",
+        address: profile.address || "",
+        district: profile.district || "",
+        postal_code: profile.postal_code || "",
+      });
+    }
+  }, [profile, form]);
+
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
