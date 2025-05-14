@@ -34,8 +34,8 @@ const AdminRoute = ({ children }) => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-16 h-16 relative">
-          <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-primary animate-spin"></div>
-          <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+          <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-orange-500 animate-spin"></div>
+          <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
             BCA
           </div>
         </div>
@@ -65,8 +65,8 @@ const App = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 relative">
-            <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-primary animate-spin"></div>
-            <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+            <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-orange-500 animate-spin"></div>
+            <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
               BCA
             </div>
           </div>

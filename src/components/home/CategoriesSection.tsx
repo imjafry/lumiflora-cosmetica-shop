@@ -2,133 +2,90 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card } from "@/components/ui/card";
 
 const categories = [
   {
     id: "skincare",
     name: "Skincare",
-    description: "Serums, moisturizers, cleansers & more",
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
-    color: "from-blue-500/20 to-blue-500/5",
-    icon: "✨",
-    itemCount: 124,
+    description: "Skincare essentials for a radiant complexion",
+    image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600",
+    color: "bg-[#f8e9d6]",
+    productCount: 124,
   },
   {
     id: "makeup",
     name: "Makeup",
-    description: "Foundations, lipsticks, eyeshadows & more",
-    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
-    color: "from-pink-500/20 to-pink-500/5",
-    icon: "💄",
-    itemCount: 98,
+    description: "Express yourself with premium cosmetics",
+    image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=600",
+    color: "bg-[#f9d5d3]",
+    productCount: 98,
   },
   {
     id: "perfumes",
-    name: "Perfumes",
-    description: "Luxury fragrances from top brands",
-    image: "https://images.unsplash.com/photo-1501854140801-50d01698950b",
-    color: "from-purple-500/20 to-purple-500/5",
-    icon: "🌸",
-    itemCount: 56,
+    name: "Fragrance",
+    description: "Luxury scents for lasting impressions",
+    image: "https://images.unsplash.com/photo-1615368711218-da4bce2fb4c8?q=80&w=600",
+    color: "bg-[#e8f0ff]",
+    productCount: 56,
   },
   {
     id: "haircare",
     name: "Hair Care",
-    description: "Shampoos, conditioners, treatments & more",
-    image: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388",
-    color: "from-amber-500/20 to-amber-500/5",
-    icon: "💇‍♀️",
-    itemCount: 72,
+    description: "Solutions for healthy, beautiful hair",
+    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600", 
+    color: "bg-[#e0f5e9]",
+    productCount: 72,
   },
 ];
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
-
-const stagger = {
-  visible: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
 export default function CategoriesSection() {
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 bg-white dark:bg-zinc-950">
       <div className="container mx-auto px-4">
-        <motion.div 
-          className="text-center mb-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
-          <h2 className="text-3xl font-bold mb-4">Shop by Category</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Explore our wide selection of imported beauty products, carefully curated for quality and authenticity
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-2">Shop by Category</h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Explore our curated collection of premium beauty products
           </p>
-        </motion.div>
-
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-          variants={stagger}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {categories.map((category) => (
-            <motion.div 
-              key={category.id} 
-              variants={fadeInUp}
-              transition={{ duration: 0.5 }}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              whileHover={{ y: -5 }}
               className="group"
             >
-              <Link to={`/category/${category.id}`} className="block">
-                <div className={`rounded-2xl overflow-hidden relative bg-gradient-to-b ${category.color} p-1 shadow-sm hover:shadow-md transition-all`}>
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
-                  <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
-                    <img 
-                      src={category.image} 
-                      alt={category.name}  
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <div className="bg-white/20 backdrop-blur-sm w-12 h-12 rounded-full flex items-center justify-center text-xl mb-3">
-                          {category.icon}
-                        </div>
-                        <h3 className="font-bold text-xl mb-1 text-white">{category.name}</h3>
-                        <p className="text-sm text-white/80 mb-3">{category.description}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-white bg-white/20 rounded-full px-3 py-1">
-                            {category.itemCount} items
-                          </span>
-                          <span className="text-white text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                            Shop now <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                          </span>
-                        </div>
-                      </div>
+              <Link to={`/category/${category.id}`}>
+                <Card className="border-none overflow-hidden h-full transition-shadow hover:shadow-md">
+                  <div className={`${category.color} p-5 rounded-t-lg`}>
+                    <div className="overflow-hidden rounded-lg">
+                      <AspectRatio ratio={1/1}>
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      </AspectRatio>
                     </div>
                   </div>
-                </div>
+                  <div className="p-4 text-center">
+                    <h3 className="font-bold text-lg mb-1">{category.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{category.description}</p>
+                    <span className="text-xs font-medium inline-block bg-muted px-2 py-1 rounded-full">
+                      {category.productCount} products
+                    </span>
+                  </div>
+                </Card>
               </Link>
             </motion.div>
           ))}
-        </motion.div>
-        
-        <div className="mt-12 text-center">
-          <Link 
-            to="/categories" 
-            className="inline-flex items-center gap-2 bg-muted/50 hover:bg-muted text-foreground px-6 py-3 rounded-full transition-colors font-medium"
-          >
-            <span>View all categories</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
         </div>
       </div>
     </section>

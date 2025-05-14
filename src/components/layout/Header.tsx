@@ -6,18 +6,18 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { ShoppingCart, User, Menu, X, Search, Heart, Bell } from "lucide-react";
 import MobileMenu from "./MobileMenu";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "../ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 
 // Logo component
 const Logo = () => (
   <Link to="/" className="flex items-center">
     <div className="relative">
-      <div className="text-2xl font-bold tracking-tight bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+      <div className="text-2xl font-bold tracking-tight">
         BeautyCrossAsia
       </div>
-      <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 transform scale-x-100 origin-left transition-transform duration-300"></div>
+      <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-100 origin-left transition-transform duration-300"></div>
     </div>
   </Link>
 );
@@ -27,7 +27,8 @@ const navItems = [
   { name: "Home", href: "/" },
   { name: "Skincare", href: "/category/skincare" },
   { name: "Makeup", href: "/category/makeup" },
-  { name: "Perfumes", href: "/category/perfumes" },
+  { name: "Fragrance", href: "/category/perfumes" },
+  { name: "Hair Care", href: "/category/haircare" },
   { name: "New Arrivals", href: "/new-arrivals" },
   { name: "Sale", href: "/category/sale" },
 ];
@@ -36,8 +37,10 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { items } = useCart();
+  
+  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   // Handle scroll event for header styling
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function Header() {
                 className="text-sm font-medium hover:text-primary transition-colors relative group"
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
               </Link>
             ))}
           </nav>
@@ -110,7 +113,9 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="rounded-full relative" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">2</Badge>
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">
+                  {cartItemCount}
+                </Badge>
               </Link>
             </Button>
 
@@ -123,7 +128,7 @@ export default function Header() {
             >
               <Link to="/account">
                 {user ? (
-                  <div className="h-7 w-7 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white font-medium text-xs">
+                  <div className="h-7 w-7 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 flex items-center justify-center text-white font-medium text-xs">
                     {user.email?.charAt(0).toUpperCase()}
                   </div>
                 ) : (
