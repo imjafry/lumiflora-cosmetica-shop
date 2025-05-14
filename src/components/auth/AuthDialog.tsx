@@ -1,45 +1,46 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 
-type AuthDialogProps = {
+interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultTab?: "login" | "register";
-};
+  initialTab?: "login" | "register";
+}
 
-const AuthDialog = ({ open, onOpenChange, defaultTab = "login" }: AuthDialogProps) => {
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
+export default function AuthDialog({ open, onOpenChange, initialTab = "login" }: AuthDialogProps) {
+  const [activeTab, setActiveTab] = useState<"login" | "register">(initialTab);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold">
-            {activeTab === "login" ? "Welcome Back" : "Create an Account"}
+          <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+            BeautyCrossAsia
           </DialogTitle>
+          <DialogDescription className="text-center">
+            Your gateway to premium beauty products
+          </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="login">Sign In</TabsTrigger>
-            <TabsTrigger value="register">Create Account</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login" className="pt-4">
-            <LoginForm onComplete={() => onOpenChange(false)} />
-          </TabsContent>
-
-          <TabsContent value="register" className="pt-4">
-            <RegisterForm onComplete={() => onOpenChange(false)} />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-4">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login" className="mt-4">
+              <LoginForm onSuccess={() => onOpenChange(false)} />
+            </TabsContent>
+            <TabsContent value="register" className="mt-4">
+              <RegisterForm onSuccess={() => setActiveTab("login")} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default AuthDialog;
+}

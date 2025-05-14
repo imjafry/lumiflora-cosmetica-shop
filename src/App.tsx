@@ -3,21 +3,52 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
+// Pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import MainLayout from "./components/layout/MainLayout";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import { useState, useEffect } from "react";
-import { AuthProvider } from "./contexts/AuthContext";
+
+// Layouts
+import MainLayout from "./components/layout/MainLayout";
+
+// Admin Pages
+import AdminDashboard from "./pages/admin/Dashboard";
 
 // Create a client
 const queryClient = new QueryClient();
+
+// Protected Route Component for Admin Routes
+const AdminRoute = ({ children }) => {
+  const { user, isAdmin, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 relative">
+          <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-primary animate-spin"></div>
+          <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+            BCA
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user || !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -51,6 +82,7 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
+              {/* Public Routes */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/category/:categoryId" element={<Index />} />
@@ -61,6 +93,12 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
               </Route>
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              
+              {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

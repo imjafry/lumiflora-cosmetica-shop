@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 const categories = [
   {
@@ -10,6 +11,8 @@ const categories = [
     description: "Serums, moisturizers, cleansers & more",
     image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
     color: "from-blue-500/20 to-blue-500/5",
+    icon: "✨",
+    itemCount: 124,
   },
   {
     id: "makeup",
@@ -17,6 +20,8 @@ const categories = [
     description: "Foundations, lipsticks, eyeshadows & more",
     image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
     color: "from-pink-500/20 to-pink-500/5",
+    icon: "💄",
+    itemCount: 98,
   },
   {
     id: "perfumes",
@@ -24,6 +29,17 @@ const categories = [
     description: "Luxury fragrances from top brands",
     image: "https://images.unsplash.com/photo-1501854140801-50d01698950b",
     color: "from-purple-500/20 to-purple-500/5",
+    icon: "🌸",
+    itemCount: 56,
+  },
+  {
+    id: "haircare",
+    name: "Hair Care",
+    description: "Shampoos, conditioners, treatments & more",
+    image: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388",
+    color: "from-amber-500/20 to-amber-500/5",
+    icon: "💇‍♀️",
+    itemCount: 72,
   },
 ];
 
@@ -58,7 +74,7 @@ export default function CategoriesSection() {
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
           variants={stagger}
           initial="hidden"
           whileInView="visible"
@@ -73,7 +89,7 @@ export default function CategoriesSection() {
               className="group"
             >
               <Link to={`/category/${category.id}`} className="block">
-                <div className={`rounded-2xl overflow-hidden relative bg-gradient-to-b ${category.color} p-1`}>
+                <div className={`rounded-2xl overflow-hidden relative bg-gradient-to-b ${category.color} p-1 shadow-sm hover:shadow-md transition-all`}>
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
                   <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
                     <img 
@@ -81,9 +97,22 @@ export default function CategoriesSection() {
                       alt={category.name}  
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                      <h3 className="font-bold text-xl mb-1">{category.name}</h3>
-                      <p className="text-sm text-white/80">{category.description}</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <div className="bg-white/20 backdrop-blur-sm w-12 h-12 rounded-full flex items-center justify-center text-xl mb-3">
+                          {category.icon}
+                        </div>
+                        <h3 className="font-bold text-xl mb-1 text-white">{category.name}</h3>
+                        <p className="text-sm text-white/80 mb-3">{category.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-white bg-white/20 rounded-full px-3 py-1">
+                            {category.itemCount} items
+                          </span>
+                          <span className="text-white text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                            Shop now <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -95,23 +124,10 @@ export default function CategoriesSection() {
         <div className="mt-12 text-center">
           <Link 
             to="/categories" 
-            className="inline-flex items-center text-primary hover:underline transition-colors"
+            className="inline-flex items-center gap-2 bg-muted/50 hover:bg-muted text-foreground px-6 py-3 rounded-full transition-colors font-medium"
           >
             <span>View all categories</span>
-            <svg 
-              className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth="2" 
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              ></path>
-            </svg>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </div>
