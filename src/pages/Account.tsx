@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   User, Package, ShoppingBag, Heart, 
@@ -18,7 +18,14 @@ const Account = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [authDialogOpen, setAuthDialogOpen] = useState(!user);
-  const [activeTab, setActiveTab] = useState("orders");
+  const [activeTab, setActiveTab] = useState("profile");
+
+  // Effect to check if user is logged in
+  useEffect(() => {
+    if (!user) {
+      setAuthDialogOpen(true);
+    }
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -75,21 +82,21 @@ const Account = () => {
 
             <nav className="grid gap-2">
               <Button 
-                variant={activeTab === "orders" ? "default" : "ghost"} 
-                className="justify-start"
-                onClick={() => handleTabClick("orders")}
-              >
-                <Package className="mr-2 h-4 w-4" />
-                My Orders
-                <ChevronRight className="ml-auto h-4 w-4" />
-              </Button>
-              <Button 
                 variant={activeTab === "profile" ? "default" : "ghost"} 
                 className="justify-start"
                 onClick={() => handleTabClick("profile")}
               >
                 <User className="mr-2 h-4 w-4" />
                 My Profile
+                <ChevronRight className="ml-auto h-4 w-4" />
+              </Button>
+              <Button 
+                variant={activeTab === "orders" ? "default" : "ghost"} 
+                className="justify-start"
+                onClick={() => handleTabClick("orders")}
+              >
+                <Package className="mr-2 h-4 w-4" />
+                My Orders
                 <ChevronRight className="ml-auto h-4 w-4" />
               </Button>
               <Button 
@@ -130,20 +137,20 @@ const Account = () => {
           <Card className="border">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full grid grid-cols-4">
-                <TabsTrigger value="orders">Order History</TabsTrigger>
                 <TabsTrigger value="profile">My Profile</TabsTrigger>
+                <TabsTrigger value="orders">Order History</TabsTrigger>
                 <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="orders" className="p-6">
-                <h2 className="text-lg font-medium mb-4">Order History</h2>
-                <OrderHistoryList />
-              </TabsContent>
-
               <TabsContent value="profile" className="p-6">
                 <h2 className="text-lg font-medium mb-4">Update Profile</h2>
                 <ProfileForm />
+              </TabsContent>
+
+              <TabsContent value="orders" className="p-6">
+                <h2 className="text-lg font-medium mb-4">Order History</h2>
+                <OrderHistoryList />
               </TabsContent>
 
               <TabsContent value="wishlist" className="p-6">
