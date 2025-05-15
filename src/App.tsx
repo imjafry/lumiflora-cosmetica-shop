@@ -6,11 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
 
 // Pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProductDetails from "./pages/ProductDetails";
+import CategoryPage from "./pages/CategoryPage";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
@@ -34,8 +36,8 @@ const AdminRoute = ({ children }) => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-16 h-16 relative">
-          <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-orange-500 animate-spin"></div>
-          <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+          <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-rose-500 animate-spin"></div>
+          <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
             BCA
           </div>
         </div>
@@ -65,8 +67,8 @@ const App = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 relative">
-            <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-orange-500 animate-spin"></div>
-            <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-b-2 border-rose-500 animate-spin"></div>
+            <div className="text-xl font-bold absolute inset-0 flex items-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
               BCA
             </div>
           </div>
@@ -79,32 +81,34 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/category/:categoryId" element={<Index />} />
-                <Route path="/products/:productId" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-              </Route>
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              
-              {/* 404 Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes */}
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/category/:categoryId" element={<CategoryPage />} />
+                  <Route path="/products/:productId" element={<ProductDetails />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                </Route>
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

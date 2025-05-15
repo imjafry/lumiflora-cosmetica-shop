@@ -1,17 +1,18 @@
 
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Clock, Star, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/contexts/CartContext";
+
+// Components
 import HeroSection from "@/components/home/HeroSection";
 import CategoriesSection from "@/components/home/CategoriesSection";
 import NewsletterSection from "@/components/home/NewsletterSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ShoppingBag, ArrowRight, Clock, Star, Heart } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/contexts/CartContext";
+import ProductCard from "@/components/products/ProductCard";
 
 // Example products data
 const featuredProducts = [
@@ -23,10 +24,14 @@ const featuredProducts = [
     originalPrice: 2990,
     rating: 4.8,
     reviewCount: 156,
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
+    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9"],
     isNew: true,
     discount: 17,
-    category: "skincare"
+    category: "skincare",
+    is_new: true,
+    is_sale: true,
+    discount_percent: 17,
+    original_price: 2990
   },
   {
     id: "2",
@@ -36,10 +41,13 @@ const featuredProducts = [
     originalPrice: 2290,
     rating: 4.6,
     reviewCount: 98,
-    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
+    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07"],
     isNew: false,
     discount: 22,
-    category: "makeup"
+    category: "makeup",
+    is_sale: true,
+    discount_percent: 22,
+    original_price: 2290
   },
   {
     id: "3",
@@ -49,10 +57,11 @@ const featuredProducts = [
     originalPrice: null,
     rating: 4.9,
     reviewCount: 42,
-    image: "https://images.unsplash.com/photo-1541643600914-78b084683601",
+    images: ["https://images.unsplash.com/photo-1541643600914-78b084683601"],
     isNew: true,
     discount: null,
-    category: "perfumes"
+    category: "perfumes",
+    is_new: true
   },
   {
     id: "4",
@@ -62,10 +71,13 @@ const featuredProducts = [
     originalPrice: 2390,
     rating: 4.7,
     reviewCount: 87,
-    image: "https://images.unsplash.com/photo-1534368786749-d48e2f071a34",
+    images: ["https://images.unsplash.com/photo-1534368786749-d48e2f071a34"],
     isNew: false,
     discount: 21,
-    category: "haircare"
+    category: "haircare",
+    is_sale: true,
+    discount_percent: 21,
+    original_price: 2390
   },
   {
     id: "5",
@@ -75,10 +87,13 @@ const featuredProducts = [
     originalPrice: 2490,
     rating: 4.5,
     reviewCount: 113,
-    image: "https://images.unsplash.com/photo-1570554886111-e80fcca6a029",
+    images: ["https://images.unsplash.com/photo-1570554886111-e80fcca6a029"],
     isNew: false,
     discount: 20,
-    category: "skincare"
+    category: "skincare",
+    is_sale: true,
+    discount_percent: 20,
+    original_price: 2490
   },
   {
     id: "6",
@@ -88,131 +103,102 @@ const featuredProducts = [
     originalPrice: 2790,
     rating: 4.4,
     reviewCount: 73,
-    image: "https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa",
+    images: ["https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa"],
     isNew: false,
     discount: 18,
-    category: "makeup"
+    category: "makeup",
+    is_sale: true,
+    discount_percent: 18,
+    original_price: 2790
   }
 ];
 
-// Product Card Component
-const ProductCard = ({ product }) => {
-  const { addItem } = useCart();
-  const [isHovered, setIsHovered] = React.useState(false);
-  
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-      brand: product.brand,
-      originalPrice: product.originalPrice
-    });
-  };
-  
-  return (
-    <Link 
-      to={`/products/${product.id}`} 
-      className="block group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Card className="border-none overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full">
-        <div className="relative">
-          <AspectRatio ratio={3/4} className="bg-[#f8f8f8] dark:bg-zinc-900">
-            <img 
-              src={product.image} 
-              alt={product.name} 
-              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
-            />
-          </AspectRatio>
-          
-          {/* Overlay with actions */}
-          <div 
-            className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${
-              isHovered ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <div className="flex gap-2">
-              <Button 
-                size="icon"
-                variant="secondary"
-                className="rounded-full h-9 w-9 bg-white hover:bg-white/90 text-black"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Heart className="h-4 w-4" />
-              </Button>
-              
-              <Button 
-                size="icon"
-                variant="secondary"
-                className="rounded-full h-9 w-9 bg-white hover:bg-white/90 text-black"
-                onClick={handleAddToCart}
-              >
-                <ShoppingBag className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isNew && (
-              <Badge className="bg-blue-500 hover:bg-blue-600 rounded-md">New</Badge>
-            )}
-            {product.discount && (
-              <Badge className="bg-red-500 hover:bg-red-600 rounded-md">-{product.discount}%</Badge>
-            )}
-          </div>
-        </div>
-        
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">{product.brand}</div>
-          <h3 className="font-medium text-base mt-1 group-hover:text-orange-500 transition-colors">{product.name}</h3>
-          
-          {/* Rating */}
-          <div className="flex items-center mt-2">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i}
-                  className={`h-3.5 w-3.5 ${i < Math.floor(product.rating) 
-                    ? "fill-amber-400 text-amber-400" 
-                    : "fill-gray-200 text-gray-200"}`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground ml-1">({product.reviewCount})</span>
-          </div>
-          
-          {/* Price */}
-          <div className="flex items-center gap-2 mt-3">
-            <span className="font-bold">৳{product.price.toLocaleString()}</span>
-            {product.originalPrice && (
-              <span className="text-sm text-muted-foreground line-through">৳{product.originalPrice.toLocaleString()}</span>
-            )}
-          </div>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full mt-3 rounded-full hover:bg-orange-500 hover:text-white transition-colors border-orange-500 text-orange-500"
-            onClick={handleAddToCart}
-          >
-            Add to Cart
-          </Button>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-};
+// Best sellers data
+const bestSellers = [
+  {
+    id: "7",
+    name: "Hydrating Facial Mist",
+    brand: "SkinJoy",
+    price: 1690,
+    originalPrice: 1990,
+    rating: 4.8,
+    reviewCount: 120,
+    images: ["https://images.unsplash.com/photo-1624988898779-754745cbca1b"],
+    category: "skincare",
+    is_bestseller: true,
+    is_sale: true,
+    discount_percent: 15,
+    original_price: 1990
+  },
+  {
+    id: "8",
+    name: "Vitamin C Serum",
+    brand: "NaturEssence",
+    price: 3490,
+    originalPrice: null,
+    rating: 4.9,
+    reviewCount: 95,
+    images: ["https://images.unsplash.com/photo-1608248543803-ba4f8c70ae7b"],
+    category: "skincare",
+    is_bestseller: true
+  },
+  {
+    id: "9",
+    name: "Revitalizing Eye Cream",
+    brand: "LuxeBeauty",
+    price: 2790,
+    originalPrice: 3290,
+    rating: 4.7,
+    reviewCount: 68,
+    images: ["https://images.unsplash.com/photo-1599305090598-fe179d501228"],
+    category: "skincare",
+    is_bestseller: true,
+    is_sale: true,
+    discount_percent: 15,
+    original_price: 3290
+  }
+];
+
+// Brand logos
+const brandLogos = [
+  {
+    name: "Natural Co",
+    logo: "https://placehold.co/120x60?text=Natural+Co",
+  },
+  {
+    name: "Skin Joy",
+    logo: "https://placehold.co/120x60?text=Skin+Joy",
+  },
+  {
+    name: "Beauty Plus",
+    logo: "https://placehold.co/120x60?text=Beauty+Plus",
+  },
+  {
+    name: "Pure Care",
+    logo: "https://placehold.co/120x60?text=Pure+Care",
+  },
+  {
+    name: "D&S",
+    logo: "https://placehold.co/120x60?text=D%26S",
+  },
+  {
+    name: "Glamour",
+    logo: "https://placehold.co/120x60?text=Glamour",
+  }
+];
+
+// Product tab options
+const tabOptions = [
+  { id: "all", label: "All Products" },
+  { id: "new", label: "New Arrivals" },
+  { id: "trending", label: "Trending" },
+  { id: "sale", label: "On Sale" },
+  { id: "bestsellers", label: "Bestsellers" }
+];
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("all");
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -220,87 +206,136 @@ const Index = () => {
       transition={{ duration: 0.5 }}
       className="overflow-x-hidden"
     >
-      {/* Sale Banner */}
-      <div className="py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-center">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center">
-            <Clock className="h-4 w-4 mr-2" />
-            <p className="font-medium text-sm">Flash Sale Ends In: <span className="font-bold">23h 45m 12s</span> - Get up to 50% OFF!</p>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Section */}
       <HeroSection />
       
       {/* Shop by Category */}
       <CategoriesSection />
 
-      {/* Best Selling Products */}
-      <section className="py-16 bg-[#f8f8f8] dark:bg-zinc-900/50">
+      {/* Brand Logos */}
+      <div className="py-10 bg-white">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Best Selling Products</h2>
-              <p className="text-muted-foreground">Our most popular products based on sales</p>
-            </div>
-            <Link to="/products" className="hidden md:flex items-center mt-4 md:mt-0 text-orange-500 font-medium hover:text-orange-600 transition-colors">
-              View all products <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {brandLogos.map((brand, index) => (
+              <div key={index} className="grayscale hover:grayscale-0 transition-all duration-300">
+                <img src={brand.logo} alt={brand.name} className="h-9 w-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Products */}
+      <section className="py-16 bg-[#f9f9f9]">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-medium mb-2 font-playfair">Featured Products</h2>
+            <div className="w-20 h-1 bg-rose-400 mx-auto"></div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+          {/* Product Tabs */}
+          <div className="flex justify-center mb-8 overflow-x-auto">
+            <div className="flex space-x-4">
+              {tabOptions.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap
+                    ${activeTab === tab.id 
+                      ? 'text-rose-500 border-b-2 border-rose-500' 
+                      : 'text-gray-500 hover:text-rose-500'}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
           
-          <div className="flex justify-center mt-8 md:hidden">
-            <Button asChild variant="outline" className="rounded-full">
-              <Link to="/products">View All Products</Link>
+          <div className="flex justify-center mt-10">
+            <Button asChild variant="outline" className="rounded-full border-rose-300 text-rose-500 hover:bg-rose-50">
+              <Link to="/products" className="px-8">View All Products</Link>
             </Button>
           </div>
         </div>
       </section>
       
-      {/* New Collection Banner */}
-      <section className="py-16 bg-white dark:bg-zinc-950">
+      {/* Promo Banner */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-[#f8e9d6] dark:bg-amber-900/20 rounded-2xl p-8 relative overflow-hidden">
-              <div className="relative z-10">
-                <Badge className="bg-orange-500 hover:bg-orange-600 mb-4">NEW ARRIVAL</Badge>
-                <h3 className="text-2xl font-bold mb-2">Summer Collection</h3>
-                <p className="mb-6 text-muted-foreground max-w-xs">Discover our new summer skincare essentials for a radiant glow</p>
-                <Button asChild className="rounded-full bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black">
-                  <Link to="/category/summer">
-                    Shop Collection
-                  </Link>
-                </Button>
+          <div className="bg-[#f6f2ea] rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="p-12 flex flex-col justify-center">
+                <div className="max-w-lg">
+                  <span className="text-rose-500 font-medium mb-2 inline-block">SAVE TODAY</span>
+                  <h3 className="text-4xl font-playfair font-medium mb-4">
+                    <span className="text-rose-500">30% </span>
+                    <span className="italic font-light">off</span>
+                  </h3>
+                  <h4 className="text-2xl font-medium mb-4">Spa Beauty Care</h4>
+                  <p className="text-gray-600 mb-6">Experience luxury skincare with our premium collection. Limited time offer - treat yourself today!</p>
+                  <Button asChild className="rounded-full bg-zinc-900 hover:bg-black text-white">
+                    <Link to="/category/spa" className="px-8">Shop Now</Link>
+                  </Button>
+                </div>
               </div>
-              <img 
-                src="https://images.unsplash.com/photo-1608248597279-f99d160bfcbc" 
-                alt="Summer collection" 
-                className="absolute right-0 bottom-0 h-5/6 object-cover object-right"
-              />
+              <div className="relative h-[300px] md:h-auto">
+                <img 
+                  src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=1000"
+                  alt="Spa Beauty Care" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Best Sellers */}
+      <section className="py-16 bg-[#f9f9f9]">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-medium mb-2 font-playfair">Best Sellers</h2>
+            <div className="w-20 h-1 bg-rose-400 mx-auto"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {bestSellers.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Women's Outlet Banner */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="bg-[#fff5f7] rounded-2xl p-12 text-center relative overflow-hidden">
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-medium mb-2">Women's Outlet</h3>
+              <h2 className="text-3xl md:text-4xl font-playfair font-medium mb-6">
+                Further reductions. Up to <span className="text-rose-500">70% Off.</span>
+              </h2>
+              <p className="text-gray-600 mb-8">Find all your favorite beauty brands at unbelievable prices.</p>
+              <Button asChild className="rounded-none bg-zinc-900 hover:bg-black text-white">
+                <Link to="/category/outlet" className="px-8">SHOP THE OUTLET</Link>
+              </Button>
             </div>
             
-            <div className="bg-[#e8f0ff] dark:bg-indigo-900/20 rounded-2xl p-8 relative overflow-hidden">
-              <div className="relative z-10">
-                <Badge className="bg-pink-500 hover:bg-pink-600 mb-4">TRENDING</Badge>
-                <h3 className="text-2xl font-bold mb-2">Luxury Fragrances</h3>
-                <p className="mb-6 text-muted-foreground max-w-xs">Explore premium scents from top designers around the world</p>
-                <Button asChild className="rounded-full bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black">
-                  <Link to="/category/fragrance">
-                    Shop Collection
-                  </Link>
-                </Button>
-              </div>
-              <img 
-                src="https://images.unsplash.com/photo-1615368711218-da4bce2fb4c8" 
-                alt="Luxury fragrances" 
-                className="absolute right-0 bottom-0 h-5/6 object-cover object-right"
-              />
+            {/* Decorative elements */}
+            <div className="absolute left-0 bottom-0 w-40 h-40">
+              <div className="absolute w-full h-full bg-contain bg-no-repeat bg-bottom opacity-30"
+                style={{backgroundImage: "url('https://images.unsplash.com/photo-1599958714858-a9e63c12a03f?q=80&w=400')"}}></div>
+            </div>
+            <div className="absolute right-0 top-0 w-40 h-40">
+              <div className="absolute w-full h-full bg-contain bg-no-repeat bg-top opacity-30"
+                style={{backgroundImage: "url('https://images.unsplash.com/photo-1608248543803-ba4f8c70ae7b?q=80&w=400')"}}></div>
             </div>
           </div>
         </div>
@@ -309,56 +344,6 @@ const Index = () => {
       {/* E-commerce Trust Badges */}
       <FeaturesGrid />
       
-      {/* Beauty Tips & Blog */}
-      <div className="py-16 bg-white dark:bg-zinc-950">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Beauty Tips & Trends</h2>
-              <p className="text-muted-foreground">Discover the latest beauty trends and tips from our experts</p>
-            </div>
-            <Link to="/blog" className="hidden md:flex items-center mt-4 md:mt-0 text-orange-500 font-medium hover:text-orange-600 transition-colors">
-              View all articles <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <Link 
-                key={i}
-                to="/blog/skincare-tips" 
-                className="group block"
-              >
-                <div className="rounded-xl overflow-hidden">
-                  <div className="aspect-[3/2] overflow-hidden">
-                    <img 
-                      src={`https://images.unsplash.com/photo-${1600000000000 + i * 100}`} 
-                      alt="Beauty blog post" 
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <span className="text-xs text-orange-500 font-medium uppercase">Skincare</span>
-                  <h3 className="font-medium text-lg mt-1 group-hover:text-orange-500 transition-colors">
-                    How to build the perfect skincare routine
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Learn how to create an effective skincare routine that works for your specific skin type and concerns.
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          
-          <div className="flex justify-center mt-8 md:hidden">
-            <Button asChild variant="outline" className="rounded-full">
-              <Link to="/blog">View All Articles</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Newsletter Section */}
       <NewsletterSection />
     </motion.div>

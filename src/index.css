@@ -93,6 +93,26 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Custom font classes */
+  .font-playfair {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  /* Elegent underline animation */
+  .elegant-link {
+    @apply relative inline-block;
+  }
+  
+  .elegant-link::after {
+    content: '';
+    @apply absolute left-0 bottom-0 w-full h-0.5 bg-rose-400 scale-x-0 origin-bottom-right transition-transform duration-300;
+  }
+  
+  .elegant-link:hover::after {
+    @apply scale-x-100 origin-bottom-left;
   }
 }
 
@@ -127,7 +147,7 @@
   }
   
   .badge-sale {
-    @apply bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+    @apply bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
   }
   
   .badge-new {
@@ -147,6 +167,28 @@
   }
   
   .btn-add-to-cart {
-    @apply text-xs rounded-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600;
+    @apply text-xs rounded-full bg-rose-400 hover:bg-rose-500 text-white;
+  }
+  
+  /* Image hover effects */
+  .zoom-hover {
+    @apply overflow-hidden;
+  }
+  
+  .zoom-hover img {
+    @apply transition-transform duration-700;
+  }
+  
+  .zoom-hover:hover img {
+    @apply scale-110;
+  }
+  
+  /* Card hover effects */
+  .lift-hover {
+    @apply transition-transform duration-300;
+  }
+  
+  .lift-hover:hover {
+    @apply -translate-y-1 shadow-md;
   }
 }
