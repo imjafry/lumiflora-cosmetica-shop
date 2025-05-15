@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -49,15 +48,6 @@ export default function FeaturedProducts() {
           description: "Please try again later.",
           variant: "destructive",
         });
-        
-        // Use mock data as fallback
-        const mockData = mockProducts.map(product => ({
-          ...product,
-          is_sale: Math.random() > 0.5,
-          discount_percent: Math.floor(Math.random() * 40) + 10,
-          original_price: Math.round(product.price * 1.3)
-        }));
-        setProducts(mockData);
       } finally {
         setLoading(false);
       }

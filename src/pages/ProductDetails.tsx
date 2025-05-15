@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingCart, Heart, Star, ChevronRight, Check, Minus, Plus } from "lucide-react";
@@ -7,63 +7,46 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock product data - would be fetched from API in a real app
-const products = {
-  "1": {
-    id: "1",
-    name: "Hydrating Serum",
-    brand: "SkinJoy",
-    price: 2490,
-    originalPrice: 2990,
-    rating: 4.8,
-    reviewCount: 156,
-    images: [
-      "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
-      "https://images.unsplash.com/photo-1607602023447-817ea84dc31f",
-      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae7b"
-    ],
-    category: "skincare",
-    isNew: true,
-    isBestseller: true,
-    description: "Our bestselling hydrating serum deeply moisturizes and rejuvenates your skin, leaving it plump and radiant. Infused with hyaluronic acid and vitamin E for maximum hydration.",
-    benefits: [
-      "Deeply hydrates skin for up to 72 hours",
-      "Reduces fine lines and wrinkles",
-      "Non-greasy, lightweight formula",
-      "Suitable for all skin types"
-    ],
-    ingredients: "Water, Butylene Glycol, Glycerin, Sodium Hyaluronate, Tocopheryl Acetate, Panthenol, Allantoin, Hydroxyethylcellulose, Disodium EDTA, Citric Acid, Sodium Citrate, Phenoxyethanol, Ethylhexylglycerin",
-    howToUse: "Apply 2-3 drops to clean, damp skin morning and night. Gently pat into skin until fully absorbed. Follow with moisturizer.",
-    stock: 23
-  },
-  "2": {
-    id: "2",
-    name: "Matte Lipstick",
-    brand: "GlamourCo",
-    price: 1790,
-    originalPrice: 2290,
-    rating: 4.6,
-    reviewCount: 98,
-    images: [
-      "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
-      "https://images.unsplash.com/photo-1610630495992-d1678dac4a8e",
-      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796"
-    ],
-    category: "makeup",
-    isNew: false,
-    isBestseller: true,
-    description: "Long-lasting matte lipstick with a smooth, velvety finish. Formulated with moisturizing ingredients to prevent drying and cracking throughout the day.",
-    benefits: [
-      "Stays on for up to 8 hours",
-      "Doesn't dry out lips",
-      "Highly pigmented formula",
-      "Cruelty-free and vegan"
-    ],
-    ingredients: "Isododecane, Dimethicone, Microcrystalline Wax, Polybutene, Hydrogenated Polyisobutene, Ozokerite, Silica, Tocopheryl Acetate, Phenoxyethanol",
-    howToUse: "Apply directly to lips starting from the center and moving outward. For a more precise application, use a lip brush.",
-    stock: 15
-  }
+// Mock benefits and other additional data that might not be in the database
+const productBenefits = {
+  skincare: [
+    "Deeply hydrates skin for up to 72 hours",
+    "Reduces fine lines and wrinkles",
+    "Non-greasy, lightweight formula",
+    "Suitable for all skin types"
+  ],
+  makeup: [
+    "Long-lasting color payoff",
+    "Buildable coverage",
+    "Enriched with vitamins and antioxidants",
+    "Dermatologically tested"
+  ],
+  perfume: [
+    "Long-lasting fragrance",
+    "Unique blend of essential oils",
+    "Paraben and phthalate free",
+    "Ideal for daily use"
+  ],
+  haircare: [
+    "Strengthens and repairs damaged hair",
+    "Prevents split ends",
+    "Adds shine and smoothness",
+    "Protects from heat styling"
+  ],
+  bodycare: [
+    "All-day hydration",
+    "Absorbs quickly with no residue",
+    "Natural ingredients",
+    "Dermatologically tested"
+  ],
+  accessories: [
+    "High-quality materials",
+    "Ergonomic design",
+    "Long-lasting durability",
+    "Essential for your beauty routine"
+  ]
 };
 
 const ProductDetails = () => {
@@ -71,23 +54,59 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
   
-  const product = productId ? products[productId] : null;
-  
-  if (!product) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
-        <p className="mb-6">The product you're looking for doesn't exist or has been removed.</p>
-        <Button asChild>
-          <Link to="/">Return to Home</Link>
-        </Button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!productId) return;
+      
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          // Add some demo data
+          setProduct({
+            ...data,
+            is_sale: Math.random() > 0.5,
+            discount_percent: Math.floor(Math.random() * 40) + 10, // 10-50% discount
+            original_price: Math.round(data.price * (1 + (Math.random() * 0.5))),
+            rating: 4 + Math.random(),
+            reviewCount: Math.floor(Math.random() * 200) + 50,
+            benefits: productBenefits[data.category as keyof typeof productBenefits] || productBenefits.skincare,
+            ingredients: "Water, Butylene Glycol, Glycerin, Sodium Hyaluronate, Tocopheryl Acetate, Panthenol, Allantoin, Hydroxyethylcellulose, Disodium EDTA, Citric Acid, Sodium Citrate, Phenoxyethanol, Ethylhexylglycerin",
+            howToUse: "Apply 2-3 drops to clean, damp skin morning and night. Gently pat into skin until fully absorbed. Follow with moisturizer."
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast({
+          title: "Error loading product",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchProduct();
+  }, [productId]);
   
   const handleAddToCart = () => {
+    if (!product) return;
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -95,7 +114,7 @@ const ProductDetails = () => {
       image: product.images[0],
       quantity: quantity,
       brand: product.brand,
-      originalPrice: product.originalPrice
+      originalPrice: product.original_price
     });
   };
   
@@ -110,7 +129,7 @@ const ProductDetails = () => {
   };
   
   const incrementQuantity = () => {
-    if (quantity < product.stock) {
+    if (product && quantity < product.stock) {
       setQuantity(quantity + 1);
     }
   };
@@ -120,6 +139,26 @@ const ProductDetails = () => {
       setQuantity(quantity - 1);
     }
   };
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-16 flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-rose-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
+        <p className="mb-6">The product you're looking for doesn't exist or has been removed.</p>
+        <Button asChild>
+          <Link to="/">Return to Home</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -159,7 +198,7 @@ const ProductDetails = () => {
           
           {/* Image Thumbnails */}
           <div className="flex gap-3">
-            {product.images.map((image, index) => (
+            {product.images.map((image: string, index: number) => (
               <button 
                 key={index} 
                 className={`w-20 h-20 rounded-lg overflow-hidden bg-[#f8f8f8] dark:bg-zinc-900 
@@ -177,15 +216,15 @@ const ProductDetails = () => {
           
           {/* Product Badges */}
           <div className="flex flex-wrap gap-2">
-            {product.isNew && (
+            {product.is_new && (
               <Badge className="bg-blue-500 hover:bg-blue-600">New Arrival</Badge>
             )}
-            {product.isBestseller && (
+            {product.is_bestseller && (
               <Badge className="bg-orange-500 hover:bg-orange-600">Bestseller</Badge>
             )}
-            {product.originalPrice && (
+            {product.is_sale && (
               <Badge className="bg-red-500 hover:bg-red-600">
-                Save {Math.round((1 - product.price/product.originalPrice) * 100)}%
+                Save {Math.round((1 - product.price/product.original_price) * 100)}%
               </Badge>
             )}
           </div>
@@ -214,15 +253,15 @@ const ProductDetails = () => {
                   />
                 ))}
               </div>
-              <span className="text-sm">{product.rating} ({product.reviewCount} reviews)</span>
+              <span className="text-sm">{product.rating.toFixed(1)} ({product.reviewCount} reviews)</span>
             </div>
           </div>
           
           <div className="mb-6">
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold">৳{product.price.toLocaleString()}</span>
-              {product.originalPrice && (
-                <span className="text-xl text-muted-foreground line-through">৳{product.originalPrice.toLocaleString()}</span>
+              {product.is_sale && product.original_price && (
+                <span className="text-xl text-muted-foreground line-through">৳{product.original_price.toLocaleString()}</span>
               )}
             </div>
             
@@ -289,7 +328,7 @@ const ProductDetails = () => {
           <div className="mb-8">
             <h3 className="font-medium mb-4 text-lg">Key Benefits:</h3>
             <ul className="space-y-3">
-              {product.benefits.map((benefit, index) => (
+              {product.benefits.map((benefit: string, index: number) => (
                 <li key={index} className="flex items-start">
                   <div className="mr-3 mt-1">
                     <div className="h-5 w-5 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
@@ -347,12 +386,6 @@ const ProductDetails = () => {
         <div className="py-6">
           <p className="text-muted-foreground leading-relaxed">{product.ingredients}</p>
         </div>
-      </div>
-      
-      {/* Related Products - would be implemented in a real app */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-8">You Might Also Like</h2>
-        {/* Related products would go here */}
       </div>
     </motion.div>
   );

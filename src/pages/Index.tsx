@@ -1,11 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock, Star, Heart } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 // Components
 import HeroSection from "@/components/home/HeroSection";
@@ -13,150 +15,15 @@ import CategoriesSection from "@/components/home/CategoriesSection";
 import NewsletterSection from "@/components/home/NewsletterSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
 import ProductCard from "@/components/products/ProductCard";
+import FeaturedProducts from "@/components/home/FeaturedProducts";
 
-// Example products data
-const featuredProducts = [
-  {
-    id: "1",
-    name: "Hydrating Serum",
-    brand: "SkinJoy",
-    price: 2490,
-    originalPrice: 2990,
-    rating: 4.8,
-    reviewCount: 156,
-    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9"],
-    isNew: true,
-    discount: 17,
-    category: "skincare",
-    is_new: true,
-    is_sale: true,
-    discount_percent: 17,
-    original_price: 2990
-  },
-  {
-    id: "2",
-    name: "Matte Lipstick",
-    brand: "GlamourCo",
-    price: 1790,
-    originalPrice: 2290,
-    rating: 4.6,
-    reviewCount: 98,
-    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07"],
-    isNew: false,
-    discount: 22,
-    category: "makeup",
-    is_sale: true,
-    discount_percent: 22,
-    original_price: 2290
-  },
-  {
-    id: "3",
-    name: "Luxe Perfume",
-    brand: "Scent & Co",
-    price: 5990,
-    originalPrice: null,
-    rating: 4.9,
-    reviewCount: 42,
-    images: ["https://images.unsplash.com/photo-1541643600914-78b084683601"],
-    isNew: true,
-    discount: null,
-    category: "perfumes",
-    is_new: true
-  },
-  {
-    id: "4",
-    name: "Hair Treatment Oil",
-    brand: "NatureGlow",
-    price: 1890,
-    originalPrice: 2390,
-    rating: 4.7,
-    reviewCount: 87,
-    images: ["https://images.unsplash.com/photo-1534368786749-d48e2f071a34"],
-    isNew: false,
-    discount: 21,
-    category: "haircare",
-    is_sale: true,
-    discount_percent: 21,
-    original_price: 2390
-  },
-  {
-    id: "5",
-    name: "Face Moisturizer",
-    brand: "SkinJoy",
-    price: 1990,
-    originalPrice: 2490,
-    rating: 4.5,
-    reviewCount: 113,
-    images: ["https://images.unsplash.com/photo-1570554886111-e80fcca6a029"],
-    isNew: false,
-    discount: 20,
-    category: "skincare",
-    is_sale: true,
-    discount_percent: 20,
-    original_price: 2490
-  },
-  {
-    id: "6",
-    name: "BB Cream",
-    brand: "GlamourCo",
-    price: 2290,
-    originalPrice: 2790,
-    rating: 4.4,
-    reviewCount: 73,
-    images: ["https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa"],
-    isNew: false,
-    discount: 18,
-    category: "makeup",
-    is_sale: true,
-    discount_percent: 18,
-    original_price: 2790
-  }
-];
-
-// Best sellers data
-const bestSellers = [
-  {
-    id: "7",
-    name: "Hydrating Facial Mist",
-    brand: "SkinJoy",
-    price: 1690,
-    originalPrice: 1990,
-    rating: 4.8,
-    reviewCount: 120,
-    images: ["https://images.unsplash.com/photo-1624988898779-754745cbca1b"],
-    category: "skincare",
-    is_bestseller: true,
-    is_sale: true,
-    discount_percent: 15,
-    original_price: 1990
-  },
-  {
-    id: "8",
-    name: "Vitamin C Serum",
-    brand: "NaturEssence",
-    price: 3490,
-    originalPrice: null,
-    rating: 4.9,
-    reviewCount: 95,
-    images: ["https://images.unsplash.com/photo-1608248543803-ba4f8c70ae7b"],
-    category: "skincare",
-    is_bestseller: true
-  },
-  {
-    id: "9",
-    name: "Revitalizing Eye Cream",
-    brand: "LuxeBeauty",
-    price: 2790,
-    originalPrice: 3290,
-    rating: 4.7,
-    reviewCount: 68,
-    images: ["https://images.unsplash.com/photo-1599305090598-fe179d501228"],
-    category: "skincare",
-    is_bestseller: true,
-    is_sale: true,
-    discount_percent: 15,
-    original_price: 3290
-  }
+// Product tab options
+const tabOptions = [
+  { id: "all", label: "All Products" },
+  { id: "new", label: "New Arrivals" },
+  { id: "trending", label: "Trending" },
+  { id: "sale", label: "On Sale" },
+  { id: "bestsellers", label: "Bestsellers" }
 ];
 
 // Brand logos
@@ -187,17 +54,50 @@ const brandLogos = [
   }
 ];
 
-// Product tab options
-const tabOptions = [
-  { id: "all", label: "All Products" },
-  { id: "new", label: "New Arrivals" },
-  { id: "trending", label: "Trending" },
-  { id: "sale", label: "On Sale" },
-  { id: "bestsellers", label: "Bestsellers" }
-];
-
 const Index = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [bestSellers, setBestSellers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function fetchBestSellers() {
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_bestseller', true)
+          .limit(3);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Add sale flag to some products for demo purposes
+        const enhancedData = data?.map(product => ({
+          ...product,
+          is_sale: Math.random() > 0.5,
+          discount_percent: Math.floor(Math.random() * 40) + 10, // 10-50% discount
+          original_price: Math.round(product.price * (1 + (Math.random() * 0.5)))
+        })) || [];
+        
+        setBestSellers(enhancedData);
+      } catch (error) {
+        console.error('Error fetching bestsellers:', error);
+        toast({
+          title: "Error loading bestsellers",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        setBestSellers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchBestSellers();
+  }, []);
   
   return (
     <motion.div
@@ -226,45 +126,7 @@ const Index = () => {
       </div>
 
       {/* Featured Products */}
-      <section className="py-16 bg-[#f9f9f9]">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-medium mb-2 font-playfair">Featured Products</h2>
-            <div className="w-20 h-1 bg-rose-400 mx-auto"></div>
-          </div>
-          
-          {/* Product Tabs */}
-          <div className="flex justify-center mb-8 overflow-x-auto">
-            <div className="flex space-x-4">
-              {tabOptions.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap
-                    ${activeTab === tab.id 
-                      ? 'text-rose-500 border-b-2 border-rose-500' 
-                      : 'text-gray-500 hover:text-rose-500'}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Product Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-          
-          <div className="flex justify-center mt-10">
-            <Button asChild variant="outline" className="rounded-full border-rose-300 text-rose-500 hover:bg-rose-50">
-              <Link to="/products" className="px-8">View All Products</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <FeaturedProducts />
       
       {/* Promo Banner */}
       <section className="py-16 bg-white">
@@ -281,7 +143,7 @@ const Index = () => {
                   <h4 className="text-2xl font-medium mb-4">Spa Beauty Care</h4>
                   <p className="text-gray-600 mb-6">Experience luxury skincare with our premium collection. Limited time offer - treat yourself today!</p>
                   <Button asChild className="rounded-full bg-zinc-900 hover:bg-black text-white">
-                    <Link to="/category/spa" className="px-8">Shop Now</Link>
+                    <Link to="/category/skincare" className="px-8">Shop Now</Link>
                   </Button>
                 </div>
               </div>
@@ -305,11 +167,19 @@ const Index = () => {
             <div className="w-20 h-1 bg-rose-400 mx-auto"></div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="rounded-xl border bg-card animate-pulse h-[350px]"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {bestSellers.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -324,7 +194,7 @@ const Index = () => {
               </h2>
               <p className="text-gray-600 mb-8">Find all your favorite beauty brands at unbelievable prices.</p>
               <Button asChild className="rounded-none bg-zinc-900 hover:bg-black text-white">
-                <Link to="/category/outlet" className="px-8">SHOP THE OUTLET</Link>
+                <Link to="/category/sale" className="px-8">SHOP THE OUTLET</Link>
               </Button>
             </div>
             
