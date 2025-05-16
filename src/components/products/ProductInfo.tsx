@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Star, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/contexts/CartContext";
+import { motion } from "framer-motion";
 
 interface ProductInfoProps {
   product: {

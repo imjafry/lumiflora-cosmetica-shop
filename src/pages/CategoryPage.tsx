@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ProductCard from "@/components/products/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -7,10 +8,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Database } from "@/integrations/supabase/types";
 
 // Define valid category types
-type CategoryType = "skincare" | "makeup" | "perfume" | "haircare" | "bodycare" | "accessories";
+type CategoryType = Database["public"]["Enums"]["product_category"];
 
 const isCategoryValid = (category: string): category is CategoryType => {
   return ["skincare", "makeup", "perfume", "haircare", "bodycare", "accessories"].includes(category);
@@ -20,6 +23,8 @@ export default function CategoryPage() {
   const { category } = useParams<{ category: string }>();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [priceRange, setPriceRange] = useState([0]);
+  const [showSaleOnly, setShowSaleOnly] = useState(false);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -65,6 +70,31 @@ export default function CategoryPage() {
     fetchProducts();
   }, [category]);
 
+  // Filter products based on price range and sale status
+  const filteredProducts = products.filter(product => {
+    const meetsPrice = product.price >= priceRange[0];
+    const meetsSale = showSaleOnly ? product.is_sale : true;
+    return meetsPrice && meetsSale;
+  });
+
+  const handlePriceChange = (value: number[]) => {
+    setPriceRange(value);
+  };
+
+  const toggleSaleItems = () => {
+    setShowSaleOnly(!showSaleOnly);
+  };
+
+  const NoProductsMessage = () => (
+    <div className="col-span-3 flex flex-col items-center justify-center py-16">
+      <h3 className="text-xl font-medium mb-2">No products found</h3>
+      <p className="text-muted-foreground mb-6">Try adjusting your filters or check back later.</p>
+      <Button onClick={() => {setPriceRange([0]); setShowSaleOnly(false);}}>
+        Reset Filters
+      </Button>
+    </div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -74,24 +104,26 @@ export default function CategoryPage() {
     >
       <h1 className="text-3xl font-semibold mb-6 capitalize">{category}</h1>
       
-      <div className="grid grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Filters Section */}
         <aside className="col-span-1">
-          <div className="bg-white rounded-md shadow-sm p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-md shadow-sm p-4">
             <h4 className="text-lg font-semibold mb-4">Filters</h4>
             
             {/* Price Range */}
             <div>
               <h5 className="font-medium mb-2">Price Range</h5>
               <Slider
-                defaultValue={[25]}
-                max={100}
-                step={1}
-                onValueChange={(value) => console.log(value)}
+                defaultValue={[0]}
+                value={priceRange}
+                max={10000}
+                step={500}
+                onValueChange={handlePriceChange}
               />
               <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                <span>$0</span>
-                <span>$100+</span>
+                <span>৳0</span>
+                <span>৳{priceRange[0]}</span>
+                <span>৳10,000+</span>
               </div>
             </div>
             
@@ -100,7 +132,13 @@ export default function CategoryPage() {
             {/* Sale Items */}
             <div>
               <h5 className="font-medium mb-2">Sale Items</h5>
-              <Badge variant="secondary">Up to 50% off</Badge>
+              <Badge 
+                variant={showSaleOnly ? "default" : "secondary"}
+                onClick={toggleSaleItems}
+                className="cursor-pointer"
+              >
+                {showSaleOnly ? "Sale items only" : "All items"}
+              </Badge>
             </div>
           </div>
         </aside>
@@ -113,12 +151,14 @@ export default function CategoryPage() {
                 <div key={i} className="rounded-xl border bg-card animate-pulse h-[350px]"></div>
               ))}
             </div>
-          ) : (
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
+          ) : (
+            <NoProductsMessage />
           )}
         </div>
       </div>
