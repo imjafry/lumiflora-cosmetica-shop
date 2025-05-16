@@ -24,6 +24,7 @@ import MainLayout from "./components/layout/MainLayout";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
+import ProductsPage from "./pages/admin/ProductsPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -88,7 +89,7 @@ const App = () => {
                 {/* Public Routes */}
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Index />} />
-                  <Route path="/category/:categoryId" element={<CategoryPage />} />
+                  <Route path="/category/:category" element={<CategoryPage />} />
                   <Route path="/products/:productId" element={<ProductDetails />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
@@ -99,6 +100,7 @@ const App = () => {
                 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
                 <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 
                 {/* 404 Route */}

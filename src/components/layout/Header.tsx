@@ -9,6 +9,10 @@ import MobileMenu from "./MobileMenu";
 import { Badge } from "../ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type CategoryType = Database["public"]["Enums"]["product_category"];
 
 // Logo component
 const Logo = () => (
@@ -22,25 +26,39 @@ const Logo = () => (
   </Link>
 );
 
-// Navigation items
-const navItems = [
-  { name: "Home", href: "/" },
-  { name: "Skincare", href: "/category/skincare" },
-  { name: "Makeup", href: "/category/makeup" },
-  { name: "Fragrance", href: "/category/perfumes" },
-  { name: "Hair Care", href: "/category/haircare" },
-  { name: "New Arrivals", href: "/new-arrivals" },
-  { name: "Sale", href: "/category/sale" },
-];
-
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { user } = useAuth();
   const { items } = useCart();
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
+
+  // Fetch categories from Supabase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('category')
+          .limit(30); // Fetch more than needed to get unique values
+        
+        if (error) throw error;
+        
+        // Extract unique categories
+        const uniqueCategories = Array.from(new Set(data.map(item => item.category)));
+        
+        // Limit to 6 categories
+        setCategories(uniqueCategories.slice(0, 6) as CategoryType[]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
 
   // Handle scroll event for header styling
   useEffect(() => {
@@ -51,6 +69,18 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Additional navigation items
+  const additionalNavItems = [
+    { name: "Home", href: "/" },
+    { name: "New Arrivals", href: "/new-arrivals" },
+    { name: "Sale", href: "/category/sale" },
+  ];
+
+  // Format category name for display
+  const formatCategoryName = (category: string) => {
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  };
 
   return (
     <header
@@ -68,16 +98,54 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
+            {/* Home link */}
+            <Link
+              to="/"
+              className="text-sm font-medium hover:text-primary transition-colors relative group"
+            >
+              Home
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            </Link>
+            
+            {/* Dynamic categories from Supabase */}
+            {categories.map((category) => (
               <Link
-                key={item.name}
-                to={item.href}
-                className="text-sm font-medium hover:text-primary transition-colors relative group"
+                key={category}
+                to={`/category/${category}`}
+                className="text-sm font-medium hover:text-primary transition-colors relative group capitalize"
               >
-                {item.name}
+                {formatCategoryName(category)}
                 <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
               </Link>
             ))}
+            
+            {/* Additional static nav items */}
+            <Link
+              to="/new-arrivals"
+              className="text-sm font-medium hover:text-primary transition-colors relative group"
+            >
+              New Arrivals
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            </Link>
+            
+            <Link
+              to="/category/sale"
+              className="text-sm font-medium hover:text-primary transition-colors relative group"
+            >
+              Sale
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            </Link>
+            
+            {/* Admin link if user is admin */}
+            {user && (
+              <Link
+                to="/admin"
+                className="text-sm font-medium hover:text-primary transition-colors relative group"
+              >
+                Admin
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              </Link>
+            )}
           </nav>
 
           {/* Right side controls */}
@@ -126,7 +194,7 @@ export default function Header() {
               className="rounded-full" 
               asChild
             >
-              <Link to="/account">
+              <Link to={user ? "/account" : "/login"}>
                 {user ? (
                   <div className="h-7 w-7 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 flex items-center justify-center text-white font-medium text-xs">
                     {user.email?.charAt(0).toUpperCase()}
@@ -176,7 +244,20 @@ export default function Header() {
       </div>
 
       {/* Mobile navigation menu */}
-      <MobileMenu open={mobileMenuOpen} setOpen={setMobileMenuOpen} navItems={navItems} />
+      <MobileMenu 
+        open={mobileMenuOpen} 
+        setOpen={setMobileMenuOpen} 
+        navItems={[
+          { name: "Home", href: "/" },
+          ...categories.map(category => ({ 
+            name: formatCategoryName(category), 
+            href: `/category/${category}` 
+          })),
+          { name: "New Arrivals", href: "/new-arrivals" },
+          { name: "Sale", href: "/category/sale" },
+          ...(user ? [{ name: "Admin", href: "/admin" }] : [])
+        ]} 
+      />
     </header>
   );
 }

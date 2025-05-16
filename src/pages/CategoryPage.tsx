@@ -31,15 +31,25 @@ export default function CategoryPage() {
       try {
         setLoading(true);
         
-        if (!category || !isCategoryValid(category)) {
+        if (!category) {
+          throw new Error("No category specified");
+        }
+        
+        let query = supabase.from('products').select('*');
+        
+        // Check if it's a valid category enum or handle "sale" as a special case
+        if (category === 'sale') {
+          // For "sale" category, we'll just get featured products and mark them as on sale
+          query = query.eq('is_featured', true);
+        } else if (isCategoryValid(category)) {
+          // For regular categories, filter by the category
+          const validCategory = category as CategoryType;
+          query = query.eq('category', validCategory);
+        } else {
           throw new Error("Invalid category");
         }
         
-        const validCategory = category as CategoryType;
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('category', validCategory);
+        const { data, error } = await query;
         
         if (error) {
           throw error;
@@ -48,9 +58,9 @@ export default function CategoryPage() {
         // Add sale flag to some products for demo purposes
         const enhancedData = data?.map(product => ({
           ...product,
-          is_sale: Math.random() > 0.5,
+          is_sale: category === 'sale' ? true : Math.random() > 0.5,
           discount_percent: Math.floor(Math.random() * 40) + 10,
-          original_price: product.price * (1 + (Math.random() * 0.5))
+          original_price: Math.round(product.price * (1 + (Math.random() * 0.5)))
         })) || [];
         
         setProducts(enhancedData);
@@ -95,6 +105,11 @@ export default function CategoryPage() {
     </div>
   );
 
+  // Format category name for display
+  const formatCategoryName = (categoryName: string) => {
+    return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -102,7 +117,7 @@ export default function CategoryPage() {
       transition={{ duration: 0.5 }}
       className="container mx-auto py-12"
     >
-      <h1 className="text-3xl font-semibold mb-6 capitalize">{category}</h1>
+      <h1 className="text-3xl font-semibold mb-6 capitalize">{category && formatCategoryName(category)}</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Filters Section */}
