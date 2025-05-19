@@ -25,6 +25,9 @@ import MainLayout from "./components/layout/MainLayout";
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import ProductsPage from "./pages/admin/ProductsPage";
+import CategoryPage as AdminCategoryPage from "./pages/admin/CategoryPage";
+import OrdersPage from "./pages/admin/OrdersPage";
+import CustomersPage from "./pages/admin/CustomersPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -101,6 +104,9 @@ const App = () => {
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/admin/products" element={<AdminRoute><ProductsPage /></AdminRoute>} />
+                <Route path="/admin/categories" element={<AdminRoute><AdminCategoryPage /></AdminRoute>} />
+                <Route path="/admin/orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
+                <Route path="/admin/customers" element={<AdminRoute><CustomersPage /></AdminRoute>} />
                 <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 
                 {/* 404 Route */}

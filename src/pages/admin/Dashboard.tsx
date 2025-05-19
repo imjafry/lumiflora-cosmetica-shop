@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Package, Users, ShoppingBag, Grid, Settings, LogOut } from "lucide-react";
+import { Package, Users, ShoppingBag, Grid, Settings, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,11 @@ const AdminDashboard = () => {
       title: "Products",
       path: "/admin/products",
       icon: Package,
+    },
+    {
+      title: "Categories",
+      path: "/admin/categories",
+      icon: Grid,
     },
     {
       title: "Orders",
