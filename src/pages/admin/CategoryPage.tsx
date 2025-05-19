@@ -31,8 +31,7 @@ export default function CategoryPage() {
       // For this example, let's use product categories from existing products
       const { data, error } = await supabase
         .from('products')
-        .select('category')
-        .distinct();
+        .select('category');
       
       if (error) throw error;
       
