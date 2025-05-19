@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -31,8 +30,8 @@ export default function CategoryPage() {
       const { data: enumData, error: enumError } = await supabase
         .from('pg_enum')
         .select('*')
-        .eq('enumtypid', 'product_category'::regtype);
-
+        .eq('enumtypid', 'product_category')
+      
       if (enumError) throw enumError;
       
       // Convert enum data to our expected format
