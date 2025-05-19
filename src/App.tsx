@@ -25,7 +25,7 @@ import MainLayout from "./components/layout/MainLayout";
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import ProductsPage from "./pages/admin/ProductsPage";
-import CategoryPage as AdminCategoryPage from "./pages/admin/CategoryPage";
+import { default as AdminCategoryPage } from "./pages/admin/CategoryPage";
 import OrdersPage from "./pages/admin/OrdersPage";
 import CustomersPage from "./pages/admin/CustomersPage";
 
