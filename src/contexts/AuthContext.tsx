@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,11 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { data, error } = await supabase.rpc('is_admin', { 
             uid: initialSession.user.id 
           });
-          
-          if (error) {
-            console.error('Error checking admin status:', error);
+          console.log(data, 'data');
+          if(data === true) {
+            setIsAdmin(true);
           } else {
-            setIsAdmin(data || false);
+            setIsAdmin(false);
           }
         }
 
@@ -141,8 +140,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signIn(email: string, password: string) {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+
+      // Fetch and set admin status right after login
+      if (data?.user) {
+        const { data: isAdminData, error: adminError } = await supabase.rpc('is_admin', { uid: data.user.id });
+        if (adminError) {
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(isAdminData || false);
+        }
+      }
+
       toast({ title: "Welcome back!" });
     } catch (error: any) {
       toast({ 

@@ -4,6 +4,12 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import bodyCare from "@/assets/images/body-care-essentials.jpg";
+import haircare from "@/assets/images/haircare.jpg";
+import skincare from "@/assets/images/natural-beauty-collection.jpg";
+import makeup from "@/assets/images/makeup.jpeg";
+import luxuryFragrances from "@/assets/images/luxery-fragnence.jpg";
+import accessories from "@/assets/images/accessories.jpeg";
 
 type CategoryType = Database["public"]["Enums"]["product_category"];
 
@@ -13,7 +19,7 @@ const defaultCategories = [
     id: "skincare",
     name: "Natural Beauty Collection",
     description: "Discover our premium skincare essentials",
-    image: "https://images.unsplash.com/photo-1612540943771-0f492ce2010f?q=80&w=600",
+    image: skincare,
     color: "bg-[#f2f0e8]",
     productCount: 124,
     tag: "NEW COLLECTION",
@@ -22,7 +28,7 @@ const defaultCategories = [
     id: "makeup",
     name: "10% OFF Body Butter",
     description: "Limited time promotion on select items",
-    image: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?q=80&w=600",
+    image: makeup,
     color: "bg-[#f9d5d3]",
     productCount: 98,
     tag: "SPECIAL OFFER",
@@ -34,42 +40,42 @@ const categoryDisplaySettings = {
   skincare: {
     name: "Natural Beauty Collection",
     description: "Discover our premium skincare essentials",
-    image: "https://images.unsplash.com/photo-1612540943771-0f492ce2010f?q=80&w=600",
+    image: skincare,
     color: "bg-[#f2f0e8]",
     tag: "NEW COLLECTION",
   },
   makeup: {
     name: "10% OFF Body Butter",
     description: "Limited time promotion on select items",
-    image: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?q=80&w=600",
+    image: makeup,
     color: "bg-[#f9d5d3]",
     tag: "SPECIAL OFFER",
   },
   perfume: {
     name: "Luxury Fragrances",
     description: "Discover your signature scent",
-    image: "https://images.unsplash.com/photo-1588514727390-91fd5ebaef81?q=80&w=600",
+    image: luxuryFragrances,
     color: "bg-[#e5e7eb]",
     tag: "TRENDING",
   },
   haircare: {
     name: "Hair Care Collection",
     description: "Salon-quality products for all hair types",
-    image: "https://images.unsplash.com/photo-1599751449128-eb7249c3d6b1?q=80&w=600",
+    image: haircare,
     color: "bg-[#dbeafe]",
     tag: "BESTSELLERS",
   },
   bodycare: {
     name: "Body Care Essentials",
     description: "Nourish and pamper your skin",
-    image: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf15?q=80&w=600",
+    image: bodyCare,
     color: "bg-[#f3e8ff]",
     tag: "MOST LOVED",
   },
   accessories: {
     name: "Beauty Accessories",
     description: "Complete your beauty routine",
-    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600",
+    image: accessories,
     color: "bg-[#fef3c7]",
     tag: "NEW ARRIVALS",
   },
@@ -106,7 +112,7 @@ export default function CategoriesSection() {
             const settings = categoryDisplaySettings[category as CategoryType] || {
               name: `${category.charAt(0).toUpperCase()}${category.slice(1)} Collection`,
               description: `Explore our ${category} collection`,
-              image: "https://images.unsplash.com/photo-1612540943771-0f492ce2010f?q=80&w=600",
+              image: "https://media.istockphoto.com/id/1318429403/photo/amber-glass-bottle-with-wooden-massage-brush-eucalyptus-leaves-mirror-and-towels.jpg?s=612x612&w=0&k=20&c=IsfxJgsQTBa2roWmtB6NJ1gVfEKF80PynaWqwwMjIQs=",
               color: "bg-[#f2f0e8]",
               tag: "COLLECTION",
             };

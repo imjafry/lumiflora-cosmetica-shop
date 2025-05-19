@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
+import { DataTable } from "@/components/ui/data-table";
 
 type OrderType = Database["public"]["Tables"]["orders"]["Row"];
 
@@ -16,21 +15,27 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalOrders, setTotalOrders] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(currentPage)
+  }, [currentPage])
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page: number) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const offset = (page - 1) * pageSize
+      const { data, error, count } = await supabase
         .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders(data || [])
+      setTotalOrders(count || 0)
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -86,6 +91,54 @@ export default function OrdersPage() {
     }
   };
 
+  const columns = [
+    {
+      header: "Order ID",
+      accessorKey: "id" as const,
+      cell: (value: string) => (
+        <span className="font-mono text-xs">{value.substring(0, 8)}...</span>
+      ),
+    },
+    {
+      header: "Customer",
+      accessorKey: "full_name" as const,
+      cell: (value: string, row: OrderType) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-sm text-muted-foreground">{row.email}</div>
+        </div>
+      ),
+    },
+    {
+      header: "Date",
+      accessorKey: "created_at" as const,
+      cell: (value: string) => formatDate(value),
+    },
+    {
+      header: "Amount",
+      accessorKey: "total" as const,
+      cell: (value: number) => formatCurrency(value),
+    },
+    {
+      header: "Status",
+      accessorKey: "status" as const,
+      cell: (value: string) => getStatusBadge(value),
+    },
+    {
+      header: "Actions",
+      accessorKey: "id" as const,
+      cell: (value: string) => (
+        <div className="text-right">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/admin/orders/${value}`}>
+              <Eye className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -111,45 +164,14 @@ export default function OrdersPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">
-                      {order.id.substring(0, 8)}...
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{order.full_name}</div>
-                        <div className="text-sm text-muted-foreground">{order.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(order.created_at || '')}</TableCell>
-                    <TableCell>{formatCurrency(order.total)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/admin/orders/${order.id}`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={orders}
+            columns={columns}
+            totalItems={totalOrders}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            pageSize={pageSize}
+          />
         ) : (
           <div className="p-8 text-center">
             <p className="text-muted-foreground mb-4">No orders found matching your search.</p>

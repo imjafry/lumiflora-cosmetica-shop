@@ -72,11 +72,11 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Help & Support</h3>
             <ul className="space-y-2">
-              <li><Link to="/faq" className="text-sm hover:text-primary transition-colors">FAQs</Link></li>
-              <li><Link to="/shipping" className="text-sm hover:text-primary transition-colors">Shipping Info</Link></li>
-              <li><Link to="/returns" className="text-sm hover:text-primary transition-colors">Returns Policy</Link></li>
-              <li><Link to="/privacy-policy" className="text-sm hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-sm hover:text-primary transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/help/faqs" className="text-sm hover:text-primary transition-colors">FAQs</Link></li>
+              <li><Link to="/help/shipping" className="text-sm hover:text-primary transition-colors">Shipping Info</Link></li>
+              <li><Link to="/help/returns" className="text-sm hover:text-primary transition-colors">Returns Policy</Link></li>
+              <li><Link to="/help/privacy" className="text-sm hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/help/terms" className="text-sm hover:text-primary transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
         </div>

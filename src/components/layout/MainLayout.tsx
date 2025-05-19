@@ -25,7 +25,7 @@ export default function MainLayout() {
   return (
     <ThemeProvider defaultTheme="light" attribute="class">
       <div className="min-h-screen flex flex-col">
-        <PromotionBanner />
+        {/* <PromotionBanner /> */}
         <Header />
         <main className="flex-grow">
           <Outlet />

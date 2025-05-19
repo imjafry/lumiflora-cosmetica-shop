@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -11,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 type CategoryType = Database["public"]["Enums"]["product_category"];
 
@@ -30,10 +30,10 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { items } = useCart();
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   // Fetch categories from Supabase
@@ -44,19 +44,19 @@ export default function Header() {
           .from('products')
           .select('category')
           .limit(30); // Fetch more than needed to get unique values
-        
+
         if (error) throw error;
-        
+
         // Extract unique categories
         const uniqueCategories = Array.from(new Set(data.map(item => item.category)));
-        
+
         // Limit to 6 categories
         setCategories(uniqueCategories.slice(0, 6) as CategoryType[]);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
     };
-    
+
     fetchCategories();
   }, []);
 
@@ -65,7 +65,7 @@ export default function Header() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -106,7 +106,7 @@ export default function Header() {
               Home
               <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </Link>
-            
+
             {/* Dynamic categories from Supabase */}
             {categories.map((category) => (
               <Link
@@ -118,7 +118,7 @@ export default function Header() {
                 <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
               </Link>
             ))}
-            
+
             {/* Additional static nav items */}
             <Link
               to="/new-arrivals"
@@ -127,7 +127,7 @@ export default function Header() {
               New Arrivals
               <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </Link>
-            
+
             <Link
               to="/category/sale"
               className="text-sm font-medium hover:text-primary transition-colors relative group"
@@ -135,14 +135,14 @@ export default function Header() {
               Sale
               <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </Link>
-            
+
             {/* Admin link if user is admin */}
-            {user && (
+            {user && isAdmin && (
               <Link
                 to="/admin"
                 className="text-sm font-medium hover:text-primary transition-colors relative group"
               >
-                Admin
+                Admin Dashboard
                 <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
               </Link>
             )}
@@ -169,13 +169,10 @@ export default function Header() {
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="rounded-full relative hidden sm:flex">
-              <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">3</Badge>
-            </Button>
+            {user && <NotificationDropdown />}
 
             {/* Theme toggle */}
-            <ThemeToggle />
+            {/* <ThemeToggle /> */}
 
             {/* Cart button */}
             <Button variant="ghost" size="icon" className="rounded-full relative" asChild>
@@ -188,10 +185,10 @@ export default function Header() {
             </Button>
 
             {/* User account button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="rounded-full" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
               asChild
             >
               <Link to={user ? "/account" : "/login"}>
@@ -231,9 +228,9 @@ export default function Header() {
               placeholder="Search for products..."
               className="flex-1 bg-transparent outline-none text-sm"
             />
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               className="p-1 h-auto rounded-full"
               onClick={() => setSearchOpen(false)}
             >
@@ -244,19 +241,19 @@ export default function Header() {
       </div>
 
       {/* Mobile navigation menu */}
-      <MobileMenu 
-        open={mobileMenuOpen} 
-        setOpen={setMobileMenuOpen} 
+      <MobileMenu
+        open={mobileMenuOpen}
+        setOpen={setMobileMenuOpen}
         navItems={[
           { name: "Home", href: "/" },
-          ...categories.map(category => ({ 
-            name: formatCategoryName(category), 
-            href: `/category/${category}` 
+          ...categories.map(category => ({
+            name: formatCategoryName(category),
+            href: `/category/${category}`
           })),
           { name: "New Arrivals", href: "/new-arrivals" },
           { name: "Sale", href: "/category/sale" },
-          ...(user ? [{ name: "Admin", href: "/admin" }] : [])
-        ]} 
+          ...(user && isAdmin ? [{ name: "Admin Dashboard", href: "/admin" }] : [])
+        ]}
       />
     </header>
   );

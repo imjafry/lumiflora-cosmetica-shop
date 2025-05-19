@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,19 +8,19 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 
 const Login = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   React.useEffect(() => {
-    if (user) {
+    if (!isLoading && user) {
       if (isAdmin) {
         navigate("/admin", { replace: true });
       } else {
         navigate("/account", { replace: true });
       }
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, isLoading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">

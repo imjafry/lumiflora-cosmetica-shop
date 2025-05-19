@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Search, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
+import { DataTable } from "@/components/ui/data-table";
 
 type ProfileType = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -17,22 +16,28 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({});
+  const [totalCustomers, setTotalCustomers] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   useEffect(() => {
-    fetchCustomers();
+    fetchCustomers(currentPage);
     fetchOrderCounts();
-  }, []);
+  }, [currentPage]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (page: number) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const offset = (page - 1) * pageSize
+      const { data, error, count } = await supabase
         .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
 
       if (error) throw error;
-      setCustomers(data || []);
+      setCustomers(data || [])
+      setTotalCustomers(count || 0)
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast({
@@ -47,14 +52,12 @@ export default function CustomersPage() {
 
   const fetchOrderCounts = async () => {
     try {
-      // Fetch all orders first
       const { data, error } = await supabase
         .from('orders')
         .select('user_id');
 
       if (error) throw error;
 
-      // Count orders by user_id manually
       const counts: Record<string, number> = {};
       data?.forEach(item => {
         if (item.user_id) {
@@ -83,6 +86,52 @@ export default function CustomersPage() {
     }).format(date);
   };
 
+  const columns = [
+    {
+      header: "Customer",
+      accessorKey: "full_name" as const,
+      cell: (value: string | null) => (
+        <div className="font-medium">{value || 'No Name'}</div>
+      ),
+    },
+    {
+      header: "Email",
+      accessorKey: "email" as const,
+    },
+    {
+      header: "Joined",
+      accessorKey: "created_at" as const,
+      cell: (value: string | null) => formatDate(value),
+    },
+    {
+      header: "Orders",
+      accessorKey: "id" as const,
+      cell: (value: string) => (
+        <Badge variant="outline">
+          {orderCounts[value] || 0} orders
+        </Badge>
+      ),
+    },
+    {
+      header: "Actions",
+      accessorKey: "id" as const,
+      cell: (value: string, row: ProfileType) => (
+        <div className="flex justify-end space-x-2">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/admin/customers/${value}`}>
+              <Eye className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon">
+            <a href={`mailto:${row.email}`}>
+              <Mail className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -108,49 +157,14 @@ export default function CustomersPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredCustomers.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Orders</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell>
-                      <div className="font-medium">{customer.full_name || 'No Name'}</div>
-                    </TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{formatDate(customer.created_at)}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {orderCounts[customer.id] || 0} orders
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/admin/customers/${customer.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <a href={`mailto:${customer.email}`}>
-                            <Mail className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={customers}
+            columns={columns}
+            totalItems={totalCustomers}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            pageSize={pageSize}
+          />
         ) : (
           <div className="p-8 text-center">
             <p className="text-muted-foreground mb-4">No customers found matching your search.</p>

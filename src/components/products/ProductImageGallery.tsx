@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import SafeImage from "../common/SafeImage";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -30,7 +31,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     >
       {/* Main Image */}
       <div className="aspect-square bg-[#f8f8f8] dark:bg-zinc-900 rounded-2xl overflow-hidden">
-        <img 
+        <SafeImage
           src={images[activeImageIndex]} 
           alt={name} 
           className="w-full h-full object-cover"
@@ -46,7 +47,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               ${index === activeImageIndex ? 'ring-2 ring-orange-500' : 'opacity-70'}`}
             onClick={() => setActiveImageIndex(index)}
           >
-            <img 
+            <SafeImage
               src={image} 
               alt={`${name} - view ${index + 1}`} 
               className="w-full h-full object-cover"

@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash, Plus, Eye, Search, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
+import { DataTable } from "@/components/ui/data-table";
+import sampleImage from "@/assets/images/No-Image.png";
 
 type ProductType = Database["public"]["Tables"]["products"]["Row"];
 
@@ -16,21 +16,27 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(currentPage)
+  }, [currentPage])
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page: number) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const offset = (page - 1) * pageSize
+      const { data, error, count } = await supabase
         .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts(data || [])
+      setTotalProducts(count || 0)
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -58,7 +64,7 @@ export default function ProductsPage() {
       });
 
       // Refresh products list
-      fetchProducts();
+      fetchProducts(currentPage);
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
@@ -69,7 +75,7 @@ export default function ProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -89,6 +95,110 @@ export default function ProductsPage() {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
+  const columns = [
+    {
+      header: "Image",
+      accessorKey: "images" as const,
+      cell: (value: string[]) => (
+        <img
+          src={value[0]}
+          alt="Product"
+          className="h-12 w-12 object-cover rounded-md"
+          onError={(e) => {
+            e.currentTarget.src = sampleImage;
+          }}
+        />
+      ),
+    },
+    {
+      header: "Name",
+      accessorKey: "name" as const,
+      cell: (value: string, row: ProductType) => (
+        <div>
+          <p className="font-medium">{value}</p>
+          <p className="text-sm text-muted-foreground">{row.brand}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Category",
+      accessorKey: "category" as const,
+      cell: (value: string) => (
+        <span className="capitalize">{value}</span>
+      ),
+    },
+    {
+      header: "Price",
+      accessorKey: "price" as const,
+      cell: (value: number) => formatCurrency(value),
+    },
+    {
+      header: "Stock",
+      accessorKey: "stock" as const,
+      cell: (value: number) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+            ${value > 10
+              ? "bg-green-100 text-green-800"
+              : value > 0
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-red-100 text-red-800"
+            }`}
+        >
+          {value > 0 ? `${value} in stock` : "Out of stock"}
+        </span>
+      ),
+    },
+    {
+      header: "Status",
+      accessorKey: "is_featured" as const,
+      cell: (value: boolean | null, row: ProductType) => (
+        <div className="space-y-1">
+          {value && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              Featured
+            </span>
+          )}
+          {row.is_bestseller && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              Bestseller
+            </span>
+          )}
+          {row.is_new && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              New
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Actions",
+      accessorKey: "id" as const,
+      cell: (value: string) => (
+        <div className="flex justify-end space-x-2">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/admin/products/${value}`}>
+              <Eye className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/admin/products/${value}/edit`}>
+              <Edit className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => handleDelete(value)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -102,7 +212,7 @@ export default function ProductsPage() {
 
       <div className="bg-background rounded-lg border mb-8">
         <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="text-lg font-medium">All Products ({products.length})</h2>
+          <h2 className="text-lg font-medium">All Products ({totalProducts})</h2>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -119,87 +229,14 @@ export default function ProductsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <div className="h-12 w-12 rounded-md bg-muted flex-shrink-0 overflow-hidden">
-                          {product.images && product.images.length > 0 ? (
-                            <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <div className="h-full w-full bg-muted flex items-center justify-center">
-                              <Package className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium">{truncateText(product.name, 30)}</div>
-                          <div className="text-sm text-muted-foreground">{product.brand}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="capitalize">{product.category}</TableCell>
-                    <TableCell>{formatCurrency(product.price)}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.is_featured && (
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
-                            Featured
-                          </Badge>
-                        )}
-                        {product.is_bestseller && (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
-                            Bestseller
-                          </Badge>
-                        )}
-                        {product.is_new && (
-                          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
-                            New
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/products/${product.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/admin/products/edit/${product.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={products}
+            columns={columns}
+            totalItems={totalProducts}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            pageSize={pageSize}
+          />
         ) : (
           <div className="p-8 text-center">
             <p className="text-muted-foreground mb-4">No products found matching your search.</p>

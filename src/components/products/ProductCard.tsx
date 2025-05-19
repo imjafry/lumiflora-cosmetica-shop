@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
+import SafeImage from "@/components/common/SafeImage";
 
 type Product = {
   id: string;
@@ -76,8 +76,8 @@ export default function ProductCard({ product, variant = "default" }: ProductCar
     return (
       <Link to={`/products/${product.id}`} className="group block">
         <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-          <img
-            src={product.images?.[0] || "https://placehold.co/400x500?text=No+Image"}
+          <SafeImage
+            src={product.images?.[0]}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
@@ -108,7 +108,7 @@ export default function ProductCard({ product, variant = "default" }: ProductCar
       <Link to={`/products/${product.id}`} className="group block">
         <div className="flex gap-4 items-center">
           <div className="relative aspect-square w-20 h-20 overflow-hidden rounded-md bg-gray-100">
-            <img
+            <SafeImage
               src={product.images?.[0] || "https://placehold.co/400x500?text=No+Image"}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -146,7 +146,7 @@ export default function ProductCard({ product, variant = "default" }: ProductCar
         <div className="rounded-xl overflow-hidden border bg-white hover:shadow-md transition-shadow h-full flex flex-col">
           {/* Product Image */}
           <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
-            <img
+            <SafeImage
               src={product.images?.[0] || "https://placehold.co/400x500?text=No+Image"}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"

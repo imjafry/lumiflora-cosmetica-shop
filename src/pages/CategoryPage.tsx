@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ProductCard from "@/components/products/ProductCard";
@@ -11,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Database } from "@/integrations/supabase/types";
+import ProductCardSkeleton from "@/components/products/ProductCardSkeleton";
 
 // Define valid category types
 type CategoryType = Database["public"]["Enums"]["product_category"];
@@ -163,7 +163,7 @@ export default function CategoryPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[...Array(9)].map((_, i) => (
-                <div key={i} className="rounded-xl border bg-card animate-pulse h-[350px]"></div>
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
