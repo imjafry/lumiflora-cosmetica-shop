@@ -8,7 +8,7 @@ import { Edit, Trash, Plus, Eye, Search, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
 import { DataTable } from "@/components/ui/data-table";
-import sampleImage from "@/assets/images/No-Image.png";
+import sampleImage from "@/assets/images/no-image.png";
 
 type ProductType = Database["public"]["Tables"]["products"]["Row"];
 

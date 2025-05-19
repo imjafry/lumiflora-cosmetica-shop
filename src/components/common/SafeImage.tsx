@@ -1,5 +1,5 @@
 import React, { ImgHTMLAttributes, useState } from "react";
-import NoImage from "@/assets/images/No-image.png";
+import NoImage from "@/assets/images/no-image.png";
 
 interface SafeImageProps extends ImgHTMLAttributes<HTMLImageElement> {}
 
