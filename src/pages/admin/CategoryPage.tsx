@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -26,16 +27,24 @@ export default function CategoryPage() {
     try {
       setLoading(true);
       
-      // Get all possible category enum values
-      const { data: enumData, error: enumError } = await supabase
-        .from('pg_enum')
-        .select('*')
-        .eq('enumtypid', 'product_category')
+      // Since we're dealing with enums, we need to get them differently
+      // For this example, let's use product categories from existing products
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .distinct();
       
-      if (enumError) throw enumError;
+      if (error) throw error;
       
-      // Convert enum data to our expected format
-      const categoryValues = (enumData?.map(item => item.enumlabel) as CategoryType[]) || [];
+      // Extract unique categories from the data
+      const categorySet = new Set<CategoryType>();
+      data?.forEach(item => {
+        if (item.category) {
+          categorySet.add(item.category as CategoryType);
+        }
+      });
+      
+      const categoryValues = Array.from(categorySet);
       setCategories(categoryValues);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -53,14 +62,16 @@ export default function CategoryPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('category, count()')
-        .group('category');
+        .select('category');
 
       if (error) throw error;
 
+      // Count products per category
       const counts: Record<string, number> = {};
       data?.forEach(item => {
-        counts[item.category] = item.count;
+        if (item.category) {
+          counts[item.category] = (counts[item.category] || 0) + 1;
+        }
       });
 
       setProductCounts(counts);

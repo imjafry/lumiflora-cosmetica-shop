@@ -47,18 +47,18 @@ export default function CustomersPage() {
 
   const fetchOrderCounts = async () => {
     try {
+      // Fetch all orders first
       const { data, error } = await supabase
         .from('orders')
-        .select('user_id, count()')
-        .not('user_id', 'is', null)
-        .group('user_id');
+        .select('user_id');
 
       if (error) throw error;
 
+      // Count orders by user_id manually
       const counts: Record<string, number> = {};
       data?.forEach(item => {
         if (item.user_id) {
-          counts[item.user_id] = item.count;
+          counts[item.user_id] = (counts[item.user_id] || 0) + 1;
         }
       });
 
